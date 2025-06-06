@@ -8,12 +8,12 @@ import { createWarranty } from "../models/warranty.model"
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "",
+  key_id: process.env["RAZORPAY_KEY_ID"] || "",
+  key_secret: process.env["RAZORPAY_KEY_SECRET"] || "",
 })
 
 // Get all subscription plans
-export const getSubscriptionPlans = async (req: Request, res: Response) => {
+export const getSubscriptionPlans = async (req: Request, res: Response): Promise<void> => {
   try {
     const subscriptionPlans = await getAllSubscriptionTypes()
     res.status(200).json({ subscriptionPlans })
@@ -24,10 +24,11 @@ export const getSubscriptionPlans = async (req: Request, res: Response) => {
 }
 
 // Create a subscription order (initial step)
-export const createSubscriptionOrder = async (req: Request, res: Response) => {
+export const createSubscriptionOrder = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const { subscription_type_id, payment_type_id } = req.body
@@ -35,13 +36,15 @@ export const createSubscriptionOrder = async (req: Request, res: Response) => {
     // Get subscription type
     const subscriptionType = await getSubscriptionTypeById(subscription_type_id)
     if (!subscriptionType) {
-      return res.status(404).json({ message: "Subscription plan not found" })
+      res.status(404).json({ message: "Subscription plan not found" })
+      return
     }
 
     // Get user
     const user = await getUserById(req.user.id)
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Create Razorpay order (as an example, assuming Razorpay)
@@ -52,19 +55,20 @@ export const createSubscriptionOrder = async (req: Request, res: Response) => {
         currency: "INR",
         receipt: `receipt_${req.user.id}_${Date.now()}`,
         notes: {
-          user_id: req.user.id,
-          subscription_type_id: subscription_type_id,
+          user_id: req.user.id.toString(),
+          subscription_type_id: subscription_type_id.toString(),
         },
       }
 
       const order = await razorpay.orders.create(options)
 
-      return res.status(200).json({
+      res.status(200).json({
         order_id: order.id,
-        amount: order.amount / 100,
+        amount: Number(order.amount) / 100, // Convert to number explicitly
         currency: order.currency,
         subscription_details: subscriptionType,
       })
+      return
     }
 
     // For other payment types (PayPal, Stripe)
@@ -78,10 +82,11 @@ export const createSubscriptionOrder = async (req: Request, res: Response) => {
 }
 
 // Verify payment and activate subscription
-export const verifySubscriptionPayment = async (req: Request, res: Response) => {
+export const verifySubscriptionPayment = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature, subscription_type_id, payment_type_id } =
@@ -92,7 +97,8 @@ export const verifySubscriptionPayment = async (req: Request, res: Response) => 
     // Get subscription type
     const subscriptionType = await getSubscriptionTypeById(subscription_type_id)
     if (!subscriptionType) {
-      return res.status(404).json({ message: "Subscription plan not found" })
+      res.status(404).json({ message: "Subscription plan not found" })
+      return
     }
 
     // Here we should verify the Razorpay signature

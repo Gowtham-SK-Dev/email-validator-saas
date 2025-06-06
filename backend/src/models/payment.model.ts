@@ -82,7 +82,7 @@ export const getAllPayments = async (page = 1, limit = 10): Promise<{ payments: 
     )
 
     const [countResult] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) as total FROM payments")
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { payments: rows, total }
   } catch (error) {
@@ -123,7 +123,7 @@ export const getPaymentsByDateRange = async (
       "SELECT COUNT(*) as total FROM payments WHERE DATE(created_at) BETWEEN ? AND ?",
       [startDate, endDate],
     )
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { payments: rows, total }
   } catch (error) {

@@ -5,17 +5,19 @@ import { getSubscriptionsByUserId } from "../models/subscription.model"
 import { getClickHistoryByUserId } from "../models/click-history.model"
 
 // Get current user profile
-export const getCurrentUser = async (req: Request, res: Response) => {
+export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id
     const user = await getUserById(userId)
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Don't send password or sensitive data
@@ -29,10 +31,11 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 }
 
 // Update user profile
-export const updateProfile = async (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id
@@ -49,10 +52,11 @@ export const updateProfile = async (req: Request, res: Response) => {
 }
 
 // Change password
-export const changePassword = async (req: Request, res: Response) => {
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id
@@ -62,13 +66,15 @@ export const changePassword = async (req: Request, res: Response) => {
     const user = await getUserById(userId)
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Check current password
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Current password is incorrect" })
+      res.status(401).json({ message: "Current password is incorrect" })
+      return
     }
 
     // Hash new password
@@ -86,10 +92,11 @@ export const changePassword = async (req: Request, res: Response) => {
 }
 
 // Get user API usage statistics
-export const getApiUsageStats = async (req: Request, res: Response) => {
+export const getApiUsageStats = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id
@@ -105,10 +112,11 @@ export const getApiUsageStats = async (req: Request, res: Response) => {
 }
 
 // Get user subscriptions
-export const getUserSubscriptions = async (req: Request, res: Response) => {
+export const getUserSubscriptions = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id
@@ -124,10 +132,11 @@ export const getUserSubscriptions = async (req: Request, res: Response) => {
 }
 
 // Get user click history
-export const getClickHistory = async (req: Request, res: Response) => {
+export const getClickHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id

@@ -11,13 +11,6 @@ interface ClickHistory {
   updated_at: Date
 }
 
-interface NewClickHistory {
-  user_id: number
-  initial_click_count: number
-  current_click_count: number
-  used_click_count: number
-}
-
 // Log click history
 export const logClickHistory = async (
   userId: number,
@@ -61,7 +54,7 @@ export const getClickHistoryByUserId = async (
       "SELECT COUNT(*) as total FROM click_history WHERE user_id = ?",
       [userId],
     )
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { clickHistory: rows as ClickHistory[], total }
   } catch (error) {
@@ -105,7 +98,7 @@ export const getAllClickHistory = async (
       `SELECT COUNT(*) as total FROM click_history ${userId > 0 ? "WHERE user_id = ?" : ""}`,
       userId > 0 ? [userId] : [],
     )
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { clickHistory: rows, total }
   } catch (error) {

@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 import { getUserById } from "../models/user.model"
-import { getRoleByName } from "../models/role.model"
 
 // Extend Request interface to include user
 declare global {
@@ -18,26 +17,29 @@ declare global {
 }
 
 // Authenticate JWT token
-export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization
-    const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+    const token = authHeader && authHeader.split(" ")[1] // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({ message: "Access token is required" })
+      res.status(401).json({ message: "Access token is required" })
+      return
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any
+    const decoded = jwt.verify(token, process.env["JWT_SECRET"] as string) as any
 
     // Get user details
     const user = await getUserById(decoded.id)
     if (!user) {
-      return res.status(401).json({ message: "Invalid token" })
+      res.status(401).json({ message: "Invalid token" })
+      return
     }
 
     if (!user.is_active) {
-      return res.status(401).json({ message: "Account is inactive" })
+      res.status(401).json({ message: "Account is inactive" })
+      return
     }
 
     // Attach user to request
@@ -51,25 +53,27 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
     next()
   } catch (error) {
     console.error("Token authentication error:", error)
-    return res.status(403).json({ message: "Invalid or expired token" })
+    res.status(403).json({ message: "Invalid or expired token" })
   }
 }
 
 // Require admin role
-export const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+export const requireAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "Authentication required" })
+      res.status(401).json({ message: "Authentication required" })
+      return
     }
 
     if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Admin access required" })
+      res.status(403).json({ message: "Admin access required" })
+      return
     }
 
     next()
   } catch (error) {
     console.error("Admin authorization error:", error)
-    return res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({ message: "Internal server error" })
   }
 }
 
@@ -77,7 +81,7 @@ export const requireAdmin = async (req: Request, res: Response, next: NextFuncti
 export const rateLimiter = (windowMs: number, maxRequests: number) => {
   const requests = new Map()
 
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const clientId = req.ip || req.connection.remoteAddress
     const now = Date.now()
     const windowStart = now - windowMs
@@ -91,10 +95,11 @@ export const rateLimiter = (windowMs: number, maxRequests: number) => {
     // Check rate limit
     const clientRequests = requests.get(clientId) || []
     if (clientRequests.length >= maxRequests) {
-      return res.status(429).json({
+      res.status(429).json({
         message: "Too many requests, please try again later",
         retryAfter: Math.ceil(windowMs / 1000),
       })
+      return
     }
 
     // Add current request
@@ -107,14 +112,15 @@ export const rateLimiter = (windowMs: number, maxRequests: number) => {
 
 // Validate request body
 export const validateRequest = (requiredFields: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const missingFields = requiredFields.filter(field => !req.body[field])
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const missingFields = requiredFields.filter((field) => !req.body[field])
 
     if (missingFields.length > 0) {
-      return res.status(400).json({
+      res.status(400).json({
         message: "Missing required fields",
         missingFields,
       })
+      return
     }
 
     next()

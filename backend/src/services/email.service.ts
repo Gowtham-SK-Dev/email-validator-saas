@@ -1,13 +1,13 @@
 import nodemailer from "nodemailer"
 
 // Create transporter
-const transporter = nodemailer.createTransporter({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: Number.parseInt(process.env.EMAIL_PORT || "587"),
+const transporter = nodemailer.createTransport({
+  host: process.env["EMAIL_HOST"] || "smtp.gmail.com",
+  port: Number.parseInt(process.env["EMAIL_PORT"] || "587"),
   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env["EMAIL_USER"],
+    pass: process.env["EMAIL_PASS"],
   },
 })
 
@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransporter({
 export const sendOtpEmail = async (email: string, otp: string): Promise<void> => {
   try {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env["EMAIL_USER"],
       to: email,
       subject: "Email Verification OTP - Email Verification SaaS",
       html: `
@@ -47,7 +47,7 @@ export const sendOtpEmail = async (email: string, otp: string): Promise<void> =>
 export const sendWelcomeEmail = async (email: string, username: string): Promise<void> => {
   try {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env["EMAIL_USER"],
       to: email,
       subject: "Welcome to Email Verification SaaS",
       html: `
@@ -85,7 +85,7 @@ export const sendWelcomeEmail = async (email: string, username: string): Promise
 export const sendPasswordResetEmail = async (email: string, otp: string): Promise<void> => {
   try {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: process.env["EMAIL_USER"],
       to: email,
       subject: "Password Reset OTP - Email Verification SaaS",
       html: `

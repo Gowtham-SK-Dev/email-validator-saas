@@ -70,7 +70,7 @@ export const getAllHelpRequests = async (page = 1, limit = 10): Promise<{ helpRe
     )
 
     const [countResult] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) as total FROM help")
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { helpRequests: rows, total }
   } catch (error) {

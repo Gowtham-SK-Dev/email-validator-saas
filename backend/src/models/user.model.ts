@@ -160,7 +160,11 @@ export const updateUserClickCount = async (id: number, amount: number): Promise<
       throw new Error("User not found")
     }
 
-    const currentClickCount = rows[0].balance_click_count
+    if (!rows[0]) {
+      throw new Error("User not found")
+    }
+    const currentClickCount = rows[0]["balance_click_count"] as number
+
     const newClickCount = Math.max(0, currentClickCount + amount) // Ensure not negative
 
     // Update click count
@@ -211,7 +215,7 @@ export const getAllUsers = async (page = 1, limit = 10, search = ""): Promise<{ 
       search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [],
     )
 
-    const total = countResult[0].total
+    const total = (countResult[0]?.["total"] as number) || 0
 
     return { users: rows as User[], total }
   } catch (error) {
@@ -259,7 +263,7 @@ export const getUserApiUsage = async (id: number): Promise<any> => {
     return {
       monthlyUsage,
       subscription: subscription.length ? subscription[0] : null,
-      balance_click_count: user[0]?.balance_click_count || 0,
+      balance_click_count: user[0]?.["balance_click_count"] || 0,
     }
   } catch (error) {
     console.error("Error getting user API usage:", error)
@@ -320,10 +324,10 @@ export const getUserStats = async (): Promise<any> => {
     )
 
     return {
-      totalUsers: totalUsers[0].total,
-      activeUsers: activeUsers[0].total,
-      totalRevenue: totalRevenue[0].total || 0,
-      totalClicks: totalClicks[0].total || 0,
+      totalUsers: (totalUsers[0]?.["total"] as number) || 0,
+      activeUsers: (activeUsers[0]?.["total"] as number) || 0,
+      totalRevenue: (totalRevenue[0]?.["total"] as number) || 0,
+      totalClicks: (totalClicks[0]?.["total"] as number) || 0,
       monthlyRevenue,
       recentUsers,
     }

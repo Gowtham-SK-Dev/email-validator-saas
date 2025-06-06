@@ -5,21 +5,25 @@ import { v4 as uuidv4 } from "uuid"
 import { getUserByEmail, getUserByUsername, createUser, updateUser, updateUserOtp } from "../models/user.model"
 import { getRoleByName } from "../models/role.model"
 import { sendOtpEmail } from "../services/email.service"
+import type { Secret } from "jsonwebtoken"
+import { promisify } from "util"
 
 // Register a new user
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password, email, mobile_number } = req.body
 
     // Check if username or email already exists
     const existingUsername = await getUserByUsername(username)
     if (existingUsername) {
-      return res.status(400).json({ message: "Username already exists" })
+      res.status(400).json({ message: "Username already exists" })
+      return
     }
 
     const existingEmail = await getUserByEmail(email)
     if (existingEmail) {
-      return res.status(400).json({ message: "Email already exists" })
+      res.status(400).json({ message: "Email already exists" })
+      return
     }
 
     // Generate OTP
@@ -32,7 +36,8 @@ export const register = async (req: Request, res: Response) => {
     // Get user role
     const userRole = await getRoleByName("user")
     if (!userRole) {
-      return res.status(500).json({ message: "User role not found" })
+      res.status(500).json({ message: "User role not found" })
+      return
     }
 
     // Generate API key and secret
@@ -40,7 +45,7 @@ export const register = async (req: Request, res: Response) => {
     const api_secret = uuidv4()
 
     // Create user
-    const userId = await createUser({
+    await createUser({
       username,
       password: hashedPassword,
       email,
@@ -56,29 +61,27 @@ export const register = async (req: Request, res: Response) => {
     // Send OTP
     await sendOtpEmail(email, otp)
 
-    res.status(201).json({
-      message: "User registered successfully. Please verify your email with the OTP sent.",
-      userId,
-    })
+    res.status(201).json({ message: "User registered successfully" })
   } catch (error) {
-    console.error("Register error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({ message: "Registration failed", error })
   }
 }
 
 // Verify OTP
-export const verifyOtp = async (req: Request, res: Response) => {
+export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Check OTP
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" })
+      res.status(400).json({ message: "Invalid OTP" })
+      return
     }
 
     // Activate user
@@ -87,15 +90,14 @@ export const verifyOtp = async (req: Request, res: Response) => {
       otp: null,
     })
 
-    res.status(200).json({ message: "OTP verified successfully. Account activated." })
+    res.status(200).json({ message: "OTP verified successfully" })
   } catch (error) {
-    console.error("Verify OTP error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(400).json({ message: "OTP verification failed", error })
   }
 }
 
 // Login user
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body
 
@@ -104,57 +106,52 @@ export const login = async (req: Request, res: Response) => {
     if (!user) {
       user = await getUserByEmail(username)
       if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" })
+        res.status(401).json({ message: "Invalid credentials" })
+        return
       }
     }
 
     // Check if account is active
     if (!user.is_active) {
-      return res.status(401).json({ message: "Account is not activated. Please verify your email." })
+      res.status(401).json({ message: "Account is not activated. Please verify your email." })
+      return
     }
 
     // Check if password matches
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid credentials" })
+      res.status(401).json({ message: "Invalid credentials" })
+      return
     }
 
     // Get user role
     const role = await getRoleByName("admin")
     const roleName = user.role_id === role?.id ? "admin" : "user"
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, role: roleName }, process.env.JWT_SECRET as string, {
-      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-    })
+    // Promisify jwt.sign
+    const signJwt = promisify<string | object | Buffer, Secret, jwt.SignOptions, string>(jwt.sign)
 
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: roleName,
-        mobile_number: user.mobile_number,
-        api_key: user.api_key,
-        balance_click_count: user.balance_click_count,
-      },
-    })
+    // Inside your login function:
+    const jwtSecret: Secret = process.env["JWT_SECRET"] || "default_secret_key"
+    const jwtExpiresIn = "7d"
+
+    const token = await signJwt({ id: user.id, role: roleName }, jwtSecret, { expiresIn: jwtExpiresIn })
+
+    res.status(200).json({ token })
   } catch (error) {
-    console.error("Login error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(401).json({ message: "Login failed", error })
   }
 }
 
 // Forgot password
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Generate OTP
@@ -166,26 +163,27 @@ export const forgotPassword = async (req: Request, res: Response) => {
     // Send OTP
     await sendOtpEmail(email, otp)
 
-    res.status(200).json({ message: "OTP sent to your email" })
+    res.status(200).json({ message: "Password reset email sent" })
   } catch (error) {
-    console.error("Forgot password error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({ message: "Forgot password failed", error })
   }
 }
 
 // Reset password
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp, newPassword } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Check OTP
     if (user.otp !== otp) {
-      return res.status(400).json({ message: "Invalid OTP" })
+      res.status(400).json({ message: "Invalid OTP" })
+      return
     }
 
     // Hash new password
@@ -198,21 +196,21 @@ export const resetPassword = async (req: Request, res: Response) => {
       otp: null,
     })
 
-    res.status(200).json({ message: "Password reset successfully" })
+    res.status(200).json({ message: "Password reset successful" })
   } catch (error) {
-    console.error("Reset password error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({ message: "Reset password failed", error })
   }
 }
 
 // Send OTP (for other verifications)
-export const sendOtp = async (req: Request, res: Response) => {
+export const sendOtp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      return res.status(404).json({ message: "User not found" })
+      res.status(404).json({ message: "User not found" })
+      return
     }
 
     // Generate OTP
@@ -224,9 +222,8 @@ export const sendOtp = async (req: Request, res: Response) => {
     // Send OTP
     await sendOtpEmail(email, otp)
 
-    res.status(200).json({ message: "OTP sent to your email" })
+    res.status(200).json({ message: "OTP sent successfully" })
   } catch (error) {
-    console.error("Send OTP error:", error)
-    res.status(500).json({ message: "Internal server error" })
+    res.status(500).json({ message: "Send OTP failed", error })
   }
 }

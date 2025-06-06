@@ -5,28 +5,32 @@ import { updateUserClickCount } from "../models/user.model"
 import { logClickHistory } from "../models/click-history.model"
 
 // Middleware to authenticate API keys
-export const authenticateApiKey = async (req: Request, res: Response, next: Function) => {
+export const authenticateApiKey = async (req: Request, res: Response, next: Function): Promise<void> => {
   try {
     const apiKey = req.headers["x-api-key"] as string
 
     if (!apiKey) {
-      return res.status(401).json({ success: false, message: "API key is required" })
+      res.status(401).json({ success: false, message: "API key is required" })
+      return
     }
 
     const user = await getUserByApiKey(apiKey)
     if (!user) {
-      return res.status(401).json({ success: false, message: "Invalid API key" })
+      res.status(401).json({ success: false, message: "Invalid API key" })
+      return
     }
 
     if (!user.is_active) {
-      return res.status(401).json({ success: false, message: "Account is inactive" })
+      res.status(401).json({ success: false, message: "Account is inactive" })
+      return
     }
 
     if (user.balance_click_count <= 0) {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: "Insufficient click balance. Please upgrade your plan.",
       })
+      return
     }
 
     // Attach user to request
@@ -45,22 +49,24 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Func
 }
 
 // Email verification API endpoint
-export const verifyEmailEndpoint = async (req: Request, res: Response) => {
+export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
 
     if (!email) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Email address is required",
       })
+      return
     }
 
     if (!req.user || !req.user.id) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: "Authentication failed",
       })
+      return
     }
 
     const userId = req.user.id
@@ -83,10 +89,11 @@ export const verifyEmailEndpoint = async (req: Request, res: Response) => {
     console.error("Email verification API error:", error)
 
     if (error instanceof Error) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: error.message || "Email verification failed",
       })
+      return
     }
 
     res.status(500).json({
@@ -97,17 +104,19 @@ export const verifyEmailEndpoint = async (req: Request, res: Response) => {
 }
 
 // Get user API usage
-export const getApiUsage = async (req: Request, res: Response) => {
+export const getApiUsage = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ success: false, message: "Authentication failed" })
+      res.status(401).json({ success: false, message: "Authentication failed" })
+      return
     }
 
     const userId = req.user.id
     const user = await getUserByApiKey(req.headers["x-api-key"] as string)
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" })
+      res.status(404).json({ success: false, message: "User not found" })
+      return
     }
 
     res.status(200).json({

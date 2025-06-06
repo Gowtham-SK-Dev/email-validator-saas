@@ -2,10 +2,11 @@ import type { Request, Response } from "express"
 import { createHelpRequest, getHelpRequestsByUserId } from "../models/help.model"
 
 // Create new help request
-export const submitHelpRequest = async (req: Request, res: Response) => {
+export const submitHelpRequest = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const { message } = req.body
@@ -28,10 +29,11 @@ export const submitHelpRequest = async (req: Request, res: Response) => {
 }
 
 // Get user help requests
-export const getUserHelpRequests = async (req: Request, res: Response) => {
+export const getUserHelpRequests = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
-      return res.status(401).json({ message: "Not authenticated" })
+      res.status(401).json({ message: "Not authenticated" })
+      return
     }
 
     const userId = req.user.id

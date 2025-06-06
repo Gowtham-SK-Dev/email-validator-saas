@@ -1,0 +1,50 @@
+{
+  "baseUrl": "http://localhost:5000",
+  "endpoints": {
+    "public": {
+      "health": "GET /health",
+      "documentation": "GET /",
+      "subscriptionPlans": "GET /api/subscription/plans"
+    },
+    "authentication": {
+      "register": "POST /api/auth/register",
+      "login": "POST /api/auth/login",
+      "verifyOtp": "POST /api/auth/verify-otp",
+      "forgotPassword": "POST /api/auth/forgot-password",
+      "resetPassword": "POST /api/auth/reset-password",
+      "sendOtp": "POST /api/auth/send-otp"
+    },
+    "user": {
+      "profile": "GET /api/user/profile",
+      "updateProfile": "PUT /api/user/profile",
+      "changePassword": "PUT /api/user/change-password",
+      "apiUsage": "GET /api/user/api-usage",
+      "subscriptions": "GET /api/user/subscriptions",
+      "clickHistory": "GET /api/user/click-history"
+    },
+    "admin": {
+      "users": "GET /api/admin/users",
+      "userProfile": "GET /api/admin/users/:id",
+      "updateUser": "PUT /api/admin/users/:id",
+      "payments": "GET /api/admin/payments",
+      "clickHistory": "GET /api/admin/click-history",
+      "helpRequests": "GET /api/admin/help-requests",
+      "respondToHelp": "PUT /api/admin/help-requests/:id",
+      "dashboardStats": "GET /api/admin/dashboard-stats",
+      "exportClickHistory": "GET /api/admin/export/click-history"
+    },
+    "emailVerification": {
+      "verifyEmail": "POST /api/verify/verify-email",
+      "usage": "GET /api/verify/usage"
+    },
+    "subscription": {
+      "plans": "GET /api/subscription/plans",
+      "createOrder": "POST /api/subscription/create-order",
+      "verifyPayment": "POST /api/subscription/verify-payment"
+    },
+    "help": {
+      "submit": "POST /api/help/submit",
+      "myRequests": "GET /api/help/my-requests"
+    }
+  }
+}
