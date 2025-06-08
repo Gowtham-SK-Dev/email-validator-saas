@@ -1,10 +1,10 @@
 -- Create database if it doesn't exist
-CREATE DATABASE IF NOT EXISTS email_verification_saas 
+CREATE DATABASE IF NOT EXISTS vpstbteck_stagingcargo 
 CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
 
 -- Use the database
-USE email_verification_saas;
+USE vpstbteck_stagingcargo;
 
 -- Display success message
 SELECT 'Database created successfully!' as message;

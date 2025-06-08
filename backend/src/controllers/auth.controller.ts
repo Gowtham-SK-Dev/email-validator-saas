@@ -8,35 +8,32 @@ import { sendOtpEmail } from "../services/email.service"
 import type { Secret } from "jsonwebtoken"
 import { promisify } from "util"
 
-// Register a new user
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password, email, mobile_number } = req.body
 
-    // Check if username or email already exists
     const existingUsername = await getUserByUsername(username)
     if (existingUsername) {
-      res.status(400).json({ message: "Username already exists" })
+      res.status(400).json({ success:false,message: "Username already exists" })
       return
     }
 
     const existingEmail = await getUserByEmail(email)
     if (existingEmail) {
-      res.status(400).json({ message: "Email already exists" })
+      res.status(400).json({ success:false, message: "Email already exists" })
       return
     }
 
-    // Generate OTP
+    
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
-    // Hash password
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)
 
-    // Get user role
     const userRole = await getRoleByName("user")
     if (!userRole) {
-      res.status(500).json({ message: "User role not found" })
+      res.status(500).json({ success:false, message: "User role not found" })
       return
     }
 
@@ -44,7 +41,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const api_key = `sk-${uuidv4()}`
     const api_secret = uuidv4()
 
-    // Create user
+    
     await createUser({
       username,
       password: hashedPassword,
@@ -53,50 +50,47 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       otp,
       api_key,
       api_secret,
-      balance_click_count: 100, // Free trial clicks
-      is_active: false, // Will be activated after OTP verification
+      balance_click_count: 100, 
+      is_active: false,
       role_id: userRole.id,
     })
 
-    // Send OTP
-    await sendOtpEmail(email, otp)
+    // await sendOtpEmail(email, otp)
 
-    res.status(201).json({ message: "User registered successfully" })
+    res.status(201).json({ success:true, message: "User registered successfully" })
   } catch (error) {
-    res.status(500).json({ message: "Registration failed", error })
+    res.status(500).json({ success:false,message: "Registration failed", error })
   }
 }
 
-// Verify OTP
 export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      res.status(404).json({ message: "User not found" })
+      res.status(404).json({ success:false, message: "User not found" })
       return
     }
 
-    // Check OTP
+    
     if (user.otp !== otp) {
-      res.status(400).json({ message: "Invalid OTP" })
+      res.status(400).json({ success:false, message: "Invalid OTP" })
       return
     }
 
-    // Activate user
+    
     await updateUser(user.id, {
       is_active: true,
       otp: null,
     })
 
-    res.status(200).json({ message: "OTP verified successfully" })
+    res.status(200).json({ success:true, message: "OTP verified successfully" })
   } catch (error) {
-    res.status(400).json({ message: "OTP verification failed", error })
+    res.status(400).json({ success:false, message: "OTP verification failed", error })
   }
 }
 
-// Login user
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body
@@ -106,83 +100,73 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!user) {
       user = await getUserByEmail(username)
       if (!user) {
-        res.status(401).json({ message: "Invalid credentials" })
+        res.status(401).json({ success:false, message: "Invalid credentials" })
         return
       }
     }
 
     // Check if account is active
     if (!user.is_active) {
-      res.status(401).json({ message: "Account is not activated. Please verify your email." })
+      res.status(401).json({ success:false, message: "Account is not activated. Please verify your email." })
       return
     }
 
-    // Check if password matches
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      res.status(401).json({ message: "Invalid credentials" })
+      res.status(401).json({ success:false, message: "Invalid credentials" })
       return
     }
 
-    // Get user role
     const role = await getRoleByName("admin")
     const roleName = user.role_id === role?.id ? "admin" : "user"
 
-    // Promisify jwt.sign
     const signJwt = promisify<string | object | Buffer, Secret, jwt.SignOptions, string>(jwt.sign)
 
-    // Inside your login function:
     const jwtSecret: Secret = process.env["JWT_SECRET"] || "default_secret_key"
     const jwtExpiresIn = "7d"
 
     const token = await signJwt({ id: user.id, role: roleName }, jwtSecret, { expiresIn: jwtExpiresIn })
 
-    res.status(200).json({ token })
+    res.status(200).json({ success:true,token:token })
   } catch (error) {
-    res.status(401).json({ message: "Login failed", error })
+    res.status(401).json({ success:false, message: "Login failed", error })
   }
 }
 
-// Forgot password
 export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      res.status(404).json({ message: "User not found" })
+      res.status(404).json({ success:false, message: "User not found" })
       return
     }
 
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
-    // Save OTP to user
     await updateUserOtp(user.id, otp)
 
-    // Send OTP
-    await sendOtpEmail(email, otp)
+    // await sendOtpEmail(email, otp)
 
-    res.status(200).json({ message: "Password reset email sent" })
+    res.status(200).json({ success:true, message: "Password reset email sent" })
   } catch (error) {
-    res.status(500).json({ message: "Forgot password failed", error })
+    res.status(500).json({ success:false, message: "Forgot password failed", error })
   }
 }
 
-// Reset password
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, otp, newPassword } = req.body
 
     const user = await getUserByEmail(email)
     if (!user) {
-      res.status(404).json({ message: "User not found" })
+      res.status(404).json({ success:false, message: "User not found" })
       return
     }
 
-    // Check OTP
     if (user.otp !== otp) {
-      res.status(400).json({ message: "Invalid OTP" })
+      res.status(400).json({ success:false, message: "Invalid OTP" })
       return
     }
 
@@ -190,15 +174,14 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(newPassword, salt)
 
-    // Update password and clear OTP
     await updateUser(user.id, {
       password: hashedPassword,
       otp: null,
     })
 
-    res.status(200).json({ message: "Password reset successful" })
+    res.status(200).json({ success:true,message: "Password reset successful" })
   } catch (error) {
-    res.status(500).json({ message: "Reset password failed", error })
+    res.status(500).json({success:false, message: "Reset password failed", error })
   }
 }
 
@@ -209,21 +192,18 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
 
     const user = await getUserByEmail(email)
     if (!user) {
-      res.status(404).json({ message: "User not found" })
+      res.status(404).json({ success:false,message: "User not found" })
       return
     }
 
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
-    // Save OTP to user
     await updateUserOtp(user.id, otp)
 
-    // Send OTP
     await sendOtpEmail(email, otp)
 
-    res.status(200).json({ message: "OTP sent successfully" })
+    res.status(200).json({ success:true, message: "OTP sent successfully" })
   } catch (error) {
-    res.status(500).json({ message: "Send OTP failed", error })
+    res.status(500).json({ success:false, message: "Send OTP failed", error })
   }
 }

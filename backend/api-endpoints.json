@@ -7,7 +7,7 @@
       "subscriptionPlans": "GET /api/subscription/plans"
     },
     "authentication": {
-      "register": "POST /api/auth/register",
+      "register": "POST /api/auth/registers",
       "login": "POST /api/auth/login",
       "verifyOtp": "POST /api/auth/verify-otp",
       "forgotPassword": "POST /api/auth/forgot-password",

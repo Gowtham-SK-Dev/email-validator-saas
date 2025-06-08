@@ -1,16 +1,16 @@
 -- Use the database
-USE email_verification_saas;
+USE vpstbteck_stagingcargo;
 
 -- Insert roles
-INSERT IGNORE INTO roles (role_name, description) VALUES
-('admin', 'Administrator with full access'),
-('user', 'Regular user with limited access');
+INSERT IGNORE INTO roles (role_name) VALUES
+('admin'),
+('user');
 
 -- Insert payment types
-INSERT IGNORE INTO payment_types (payment_type_name, description) VALUES
-('razorpay', 'Razorpay payment gateway'),
-('stripe', 'Stripe payment gateway'),
-('paypal', 'PayPal payment gateway');
+INSERT IGNORE INTO payment_types (payment_type_name) VALUES
+('razorpay'),
+('stripe'),
+('paypal');
 
 -- Insert subscription types
 INSERT IGNORE INTO subscription_types (plan_name, price, hit_limit, validity, description) VALUES

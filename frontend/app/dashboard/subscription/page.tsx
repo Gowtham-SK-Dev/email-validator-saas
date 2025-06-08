@@ -18,6 +18,8 @@ import {
   Crown,
 } from "lucide-react"
 import { SubscriptionHistory } from "@/components/dashboard/subscription-history"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 const currentPlan = {
   name: "Pro Plan",
@@ -41,6 +43,7 @@ const currentPlan = {
 
 const availablePlans = [
   {
+    id: "basic",
     name: "Basic",
     price: "₹100",
     billing: "monthly",
@@ -50,6 +53,7 @@ const availablePlans = [
     current: false,
   },
   {
+    id: "pro",
     name: "Pro",
     price: "₹500",
     billing: "monthly",
@@ -59,6 +63,7 @@ const availablePlans = [
     current: true,
   },
   {
+    id: "enterprise",
     name: "Enterprise",
     price: "₹1,500",
     billing: "monthly",
@@ -70,8 +75,25 @@ const availablePlans = [
 ]
 
 export default function SubscriptionPage() {
+  const router = useRouter()
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+
+  const handleUpgrade = (planId: string) => {
+    setSelectedPlan(planId)
+
+    // Find the selected plan details
+    const plan = availablePlans.find((p) => p.id === planId)
+
+    if (plan) {
+      // Navigate to payment page with plan details
+      router.push(
+        `/dashboard/payment?plan=${planId}&price=${plan.price.replace("₹", "")}&name=${plan.name}&calls=${plan.calls}`,
+      )
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50">
       <div className="max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
         <motion.div
@@ -82,13 +104,15 @@ export default function SubscriptionPage() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-                <CreditCard className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                <CreditCard className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 Subscription
               </h1>
-              <p className="text-slate-600 mt-1">Manage your subscription and billing information.</p>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Manage your subscription and billing information.
+              </p>
             </div>
-            <Button className="gap-2 bg-blue-600 hover:bg-blue-700 w-fit">
+            <Button className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white w-fit">
               <Download className="h-4 w-4" />
               Download Invoice
             </Button>
@@ -101,32 +125,34 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-900/30">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div className="space-y-4 flex-1">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Star className="h-6 w-6 text-blue-600" />
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                      <Star className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-slate-900">{currentPlan.name}</h3>
-                      <p className="text-slate-600">
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{currentPlan.name}</h3>
+                      <p className="text-slate-600 dark:text-slate-400">
                         {currentPlan.price}/{currentPlan.billing} • Next billing: {currentPlan.nextBilling}
                       </p>
                     </div>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">{currentPlan.status}</Badge>
+                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-900/50">
+                      {currentPlan.status}
+                    </Badge>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">API Usage this month</span>
-                      <span className="font-medium text-slate-900">
+                      <span className="text-slate-600 dark:text-slate-400">API Usage this month</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-200">
                         {currentPlan.usage.current.toLocaleString()} / {currentPlan.usage.limit.toLocaleString()}
                       </span>
                     </div>
-                    <Progress value={currentPlan.usage.percentage} className="h-2" />
-                    <p className="text-xs text-slate-500">
+                    <Progress value={currentPlan.usage.percentage} className="h-2 dark:bg-slate-700" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {currentPlan.usage.percentage}% used • {currentPlan.usage.limit - currentPlan.usage.current} calls
                       remaining
                     </p>
@@ -134,11 +160,14 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
                     <Calendar className="h-4 w-4" />
                     Manage Billing
                   </Button>
-                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700">
+                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white">
                     <ArrowUpRight className="h-4 w-4" />
                     Upgrade Plan
                   </Button>
@@ -155,16 +184,18 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="border-0 shadow-sm bg-white">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600">Calls Used</p>
-                    <p className="text-2xl font-bold text-slate-900">{currentPlan.usage.current.toLocaleString()}</p>
-                    <p className="text-xs text-slate-500">This month</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Calls Used</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                      {currentPlan.usage.current.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">This month</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-blue-50">
-                    <Zap className="h-6 w-6 text-blue-600" />
+                  <div className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-900/30">
+                    <Zap className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
               </CardContent>
@@ -176,18 +207,18 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="border-0 shadow-sm bg-white">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600">Calls Remaining</p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Calls Remaining</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                       {(currentPlan.usage.limit - currentPlan.usage.current).toLocaleString()}
                     </p>
-                    <p className="text-xs text-slate-500">Until reset</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Until reset</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-emerald-50">
-                    <CheckCircle className="h-6 w-6 text-emerald-600" />
+                  <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30">
+                    <CheckCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                   </div>
                 </div>
               </CardContent>
@@ -199,16 +230,16 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Card className="border-0 shadow-sm bg-white">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600">Days Until Reset</p>
-                    <p className="text-2xl font-bold text-slate-900">12</p>
-                    <p className="text-xs text-slate-500">June 30, 2025</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Until Reset</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">12</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">June 30, 2025</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-amber-50">
-                    <Clock className="h-6 w-6 text-amber-600" />
+                  <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30">
+                    <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                   </div>
                 </div>
               </CardContent>
@@ -220,16 +251,16 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="border-0 shadow-sm bg-white">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600">Success Rate</p>
-                    <p className="text-2xl font-bold text-slate-900">99.2%</p>
-                    <p className="text-xs text-slate-500">This month</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Success Rate</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">99.2%</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">This month</p>
                   </div>
-                  <div className="p-3 rounded-2xl bg-purple-50">
-                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                  <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-900/30">
+                    <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                 </div>
               </CardContent>
@@ -243,10 +274,14 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">Available Plans</CardTitle>
-              <CardDescription className="text-slate-600">Choose the plan that best fits your needs</CardDescription>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Available Plans
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Choose the plan that best fits your needs
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
@@ -258,19 +293,19 @@ export default function SubscriptionPage() {
                     transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
                     className={`relative p-6 rounded-2xl border-2 transition-all duration-300 ${
                       plan.current
-                        ? "border-blue-200 bg-blue-50"
+                        ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20"
                         : plan.popular
-                          ? "border-purple-200 bg-purple-50"
-                          : "border-slate-200 hover:border-slate-300"
+                          ? "border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-900/20"
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
                     }`}
                   >
                     {plan.popular && !plan.current && (
-                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white">
+                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white dark:bg-purple-500">
                         Most Popular
                       </Badge>
                     )}
                     {plan.current && (
-                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white">
+                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white dark:bg-blue-500">
                         Current Plan
                       </Badge>
                     )}
@@ -279,23 +314,23 @@ export default function SubscriptionPage() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-center">
                           {plan.name === "Enterprise" ? (
-                            <Crown className="h-8 w-8 text-amber-500" />
+                            <Crown className="h-8 w-8 text-amber-500 dark:text-amber-400" />
                           ) : (
-                            <Star className="h-8 w-8 text-blue-500" />
+                            <Star className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                           )}
                         </div>
-                        <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{plan.name}</h3>
                         <div>
-                          <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
-                          <span className="text-slate-600">/{plan.billing}</span>
+                          <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{plan.price}</span>
+                          <span className="text-slate-600 dark:text-slate-400">/{plan.billing}</span>
                         </div>
-                        <p className="text-sm text-slate-600">{plan.calls}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">{plan.calls}</p>
                       </div>
 
-                      <ul className="space-y-2 text-sm text-slate-600">
+                      <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                         {plan.features.map((feature, idx) => (
                           <li key={idx} className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                            <CheckCircle className="h-4 w-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
                             {feature}
                           </li>
                         ))}
@@ -303,9 +338,12 @@ export default function SubscriptionPage() {
 
                       <Button
                         className={`w-full ${
-                          plan.current ? "bg-slate-600 hover:bg-slate-700" : "bg-blue-600 hover:bg-blue-700"
+                          plan.current
+                            ? "bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600"
+                            : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                         }`}
                         disabled={plan.current}
+                        onClick={() => handleUpgrade(plan.id)}
                       >
                         {plan.current ? "Current Plan" : "Upgrade to " + plan.name}
                       </Button>
@@ -323,10 +361,14 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.9 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">Subscription History</CardTitle>
-              <CardDescription className="text-slate-600">Your past subscriptions and payments</CardDescription>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                Subscription History
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Your past subscriptions and payments
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <SubscriptionHistory />

@@ -1,15 +1,6 @@
 -- Use the database
 USE vpstbteck_stagingcargo;
 
--- Create roles table
-CREATE TABLE IF NOT EXISTS roles (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    role_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -26,29 +17,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
-);
-
--- Create payment_types table
-CREATE TABLE IF NOT EXISTS payment_types (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    payment_type_name VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Create subscription_types table
-CREATE TABLE IF NOT EXISTS subscription_types (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    plan_name VARCHAR(100) NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    hit_limit INT NOT NULL,
-    validity INT NULL COMMENT 'Validity in days, NULL for unlimited',
-    description TEXT,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Create subscriptions table
@@ -137,4 +105,4 @@ CREATE TABLE IF NOT EXISTS menus (
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
 );
 
-SELECT 'All tables created successfully!' as message;
+SELECT 'All main tables created successfully!' as message;
