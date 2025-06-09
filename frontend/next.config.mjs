@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  basePath: '/email_validator/frontend',
+  assetPrefix: '/email_validator/frontend',
   eslint: {
     ignoreDuringBuilds: true,
   },
