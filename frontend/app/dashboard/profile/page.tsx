@@ -46,8 +46,51 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
+    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
+      {/* Animated background circles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
+          animate={{
+            x: [0, 30, -10, 20, 0],
+            y: [0, -40, 10, -20, 0],
+            scale: [1, 1.1, 0.9, 1.05, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
+          animate={{
+            x: [0, -20, 10, -30, 0],
+            y: [0, 30, -20, 10, 0],
+            scale: [1, 0.9, 1.1, 0.95, 1],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
+          animate={{
+            x: [0, 40, -30, 20, 0],
+            y: [0, -20, 40, -10, 0],
+            scale: [1, 1.05, 0.95, 1.1, 1],
+          }}
+          transition={{
+            duration: 35,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -57,20 +100,24 @@ const ProfilePage = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Profile Settings</h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Profile Settings</h1>
+              <p className="text-slate-600 dark:text-slate-300 mt-1">
                 Manage your account information and preferences.
               </p>
             </div>
             <div className="flex items-center gap-3">
               {isEditing ? (
                 <>
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSave}
-                    className="gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                   >
                     <Save className="h-4 w-4" />
                     Save Changes
@@ -79,7 +126,7 @@ const ProfilePage = () => {
               ) : (
                 <Button
                   onClick={() => setIsEditing(true)}
-                  className="gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200"
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   <Edit3 className="h-4 w-4" />
                   Edit Profile
@@ -101,11 +148,17 @@ const ProfilePage = () => {
 
             {/* Card Actions */}
             <div className="grid grid-cols-2 gap-3 mt-8">
-              <Button variant="outline" className="gap-2 text-xs">
+              <Button
+                variant="outline"
+                className="gap-2 text-xs dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
                 <Download className="h-3 w-3" />
                 Download
               </Button>
-              <Button variant="outline" className="gap-2 text-xs">
+              <Button
+                variant="outline"
+                className="gap-2 text-xs dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
                 <Share2 className="h-3 w-3" />
                 Share
               </Button>
@@ -120,19 +173,19 @@ const ProfilePage = () => {
             className="lg:col-span-2 space-y-6"
           >
             {/* Personal Information */}
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-50">
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                   Personal Information
                 </CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-400">
+                <CardDescription className="text-slate-600 dark:text-slate-300">
                   Update your personal details here.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="firstName" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       First Name
                     </Label>
                     <Input
@@ -141,11 +194,11 @@ const ProfilePage = () => {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="lastName" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       Last Name
                     </Label>
                     <Input
@@ -154,13 +207,13 @@ const ProfilePage = () => {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <Label htmlFor="email" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     Email Address
                   </Label>
                   <Input
@@ -170,13 +223,13 @@ const ProfilePage = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       Phone Number
                     </Label>
                     <Input
@@ -185,11 +238,11 @@ const ProfilePage = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="company" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    <Label htmlFor="company" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       Company
                     </Label>
                     <Input
@@ -198,13 +251,13 @@ const ProfilePage = () => {
                       value={formData.company}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <Label htmlFor="location" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     Location
                   </Label>
                   <Input
@@ -213,12 +266,12 @@ const ProfilePage = () => {
                     value={formData.location}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="bio" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <Label htmlFor="bio" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     Bio
                   </Label>
                   <Textarea
@@ -228,65 +281,77 @@ const ProfilePage = () => {
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     rows={4}
-                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 resize-none dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900"
+                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 resize-none dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Security Settings */}
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-50 flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   Security Settings
                 </CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-400">
+                <CardDescription className="text-slate-600 dark:text-slate-300">
                   Manage your account security preferences.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                      <Key className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+                    <div className="p-2 bg-slate-100 dark:bg-slate-700/60 rounded-lg">
+                      <Key className="h-4 w-4 text-slate-600 dark:text-slate-300" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">Password</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Last changed 3 months ago</p>
+                      <p className="font-medium text-slate-900 dark:text-white">Password</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">Last changed 3 months ago</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
                     Change Password
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                       <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">Two-Factor Authentication</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Add an extra layer of security</p>
+                      <p className="font-medium text-slate-900 dark:text-white">Two-Factor Authentication</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">Add an extra layer of security</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
                     Enable 2FA
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
                       <Bell className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-900 dark:text-slate-50">Email Notifications</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Receive updates about your account</p>
+                      <p className="font-medium text-slate-900 dark:text-white">Email Notifications</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">Receive updates about your account</p>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
                     Configure
                   </Button>
                 </div>
