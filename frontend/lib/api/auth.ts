@@ -17,21 +17,34 @@ export class AuthService {
   // Login user
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
+      console.log("🔐 AuthService.login called with:", { username: credentials.username })
+
       const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials, {
         requireAuth: false,
       })
 
+      console.log("📡 API Response:", response)
+
       if (response.success && response.data) {
-        // Store user data in localStorage
+        console.log("✅ Login successful, storing user data...")
+
+        // Store user data in localStorage and cookies
         if (typeof window !== "undefined") {
-          localStorage.setItem("user_data", JSON.stringify(response.data.user))
-          localStorage.setItem("refresh_token", response.data.refreshToken)
+          localStorage.setItem("auth-token", response.data.token)
+          localStorage.setItem("user-data", JSON.stringify(response.data.user))
+
+          // Also set cookie for middleware
+          document.cookie = `auth-token=${response.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`
+
+          console.log("💾 Data stored in localStorage and cookies")
         }
+
         return response.data
       }
 
       throw new Error(response.message || "Login failed")
     } catch (error: any) {
+      console.error("❌ AuthService.login error:", error)
       throw new Error(error.message || "Login failed")
     }
   }
@@ -64,7 +77,11 @@ export class AuthService {
         // Store user data if verification includes login
         if (response.data.token && response.data.user) {
           if (typeof window !== "undefined") {
-            localStorage.setItem("user_data", JSON.stringify(response.data.user))
+            localStorage.setItem("auth-token", response.data.token)
+            localStorage.setItem("user-data", JSON.stringify(response.data.user))
+
+            // Also set cookie for middleware
+            document.cookie = `auth-token=${response.data.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`
           }
         }
         return response.data
@@ -118,8 +135,14 @@ export class AuthService {
       // Continue with logout even if API call fails
       console.warn("Logout API call failed:", error)
     } finally {
-      // Always clear local storage
-      apiClient.logout()
+      // Always clear local storage and cookies
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth-token")
+        localStorage.removeItem("user-data")
+
+        // Clear cookie
+        document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      }
     }
   }
 
@@ -128,7 +151,12 @@ export class AuthService {
     if (typeof window === "undefined") return null
 
     try {
-      const userData = localStorage.getItem("user_data")
+      const userData = localStorage.getItem("user-data")
+      const token = localStorage.getItem("auth-token")
+
+      console.log("🔍 getCurrentUser - userData:", userData)
+      console.log("🔍 getCurrentUser - token:", token ? "exists" : "missing")
+
       return userData ? JSON.parse(userData) : null
     } catch (error) {
       console.error("Error parsing user data:", error)
@@ -138,6 +166,14 @@ export class AuthService {
 
   // Check if user is authenticated
   static isAuthenticated(): boolean {
-    return apiClient.isAuthenticated()
+    if (typeof window === "undefined") return false
+
+    const token = localStorage.getItem("auth-token")
+    const userData = localStorage.getItem("user-data")
+
+    const isAuth = !!(token && userData)
+    console.log("🔍 isAuthenticated:", isAuth)
+
+    return isAuth
   }
 }

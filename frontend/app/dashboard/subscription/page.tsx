@@ -93,8 +93,51 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-900/50">
-      <div className="max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
+    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
+      {/* Animated background circles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
+          animate={{
+            x: [0, 30, -10, 20, 0],
+            y: [0, -40, 10, -20, 0],
+            scale: [1, 1.1, 0.9, 1.05, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
+          animate={{
+            x: [0, -20, 10, -30, 0],
+            y: [0, 30, -20, 10, 0],
+            scale: [1, 0.9, 1.1, 0.95, 1],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
+          animate={{
+            x: [0, 40, -30, 20, 0],
+            y: [0, -20, 40, -10, 0],
+            scale: [1, 1.05, 0.95, 1.1, 1],
+          }}
+          transition={{
+            duration: 35,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -104,11 +147,11 @@ export default function SubscriptionPage() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
                 <CreditCard className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 Subscription
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
+              <p className="text-slate-600 dark:text-slate-300 mt-1">
                 Manage your subscription and billing information.
               </p>
             </div>
@@ -125,7 +168,7 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-900/30">
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-900/30 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div className="space-y-4 flex-1">
@@ -134,8 +177,8 @@ export default function SubscriptionPage() {
                       <Star className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{currentPlan.name}</h3>
-                      <p className="text-slate-600 dark:text-slate-400">
+                      <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{currentPlan.name}</h3>
+                      <p className="text-slate-600 dark:text-slate-300">
                         {currentPlan.price}/{currentPlan.billing} • Next billing: {currentPlan.nextBilling}
                       </p>
                     </div>
@@ -146,8 +189,8 @@ export default function SubscriptionPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">API Usage this month</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-200">
+                      <span className="text-slate-600 dark:text-slate-300">API Usage this month</span>
+                      <span className="font-medium text-slate-900 dark:text-white">
                         {currentPlan.usage.current.toLocaleString()} / {currentPlan.usage.limit.toLocaleString()}
                       </span>
                     </div>
@@ -184,12 +227,12 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Calls Used</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Calls Used</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
                       {currentPlan.usage.current.toLocaleString()}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">This month</p>
@@ -207,12 +250,12 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Calls Remaining</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Calls Remaining</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
                       {(currentPlan.usage.limit - currentPlan.usage.current).toLocaleString()}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">Until reset</p>
@@ -230,12 +273,12 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Days Until Reset</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">12</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Days Until Reset</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">12</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">June 30, 2025</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30">
@@ -251,12 +294,12 @@ export default function SubscriptionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Success Rate</p>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">99.2%</p>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-300">Success Rate</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">99.2%</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">This month</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-900/30">
@@ -274,12 +317,10 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                Available Plans
-              </CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Available Plans</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Choose the plan that best fits your needs
               </CardDescription>
             </CardHeader>
@@ -319,15 +360,15 @@ export default function SubscriptionPage() {
                             <Star className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                           )}
                         </div>
-                        <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{plan.name}</h3>
+                        <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{plan.name}</h3>
                         <div>
-                          <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">{plan.price}</span>
-                          <span className="text-slate-600 dark:text-slate-400">/{plan.billing}</span>
+                          <span className="text-3xl font-bold text-slate-900 dark:text-white">{plan.price}</span>
+                          <span className="text-slate-600 dark:text-slate-300">/{plan.billing}</span>
                         </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{plan.calls}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-300">{plan.calls}</p>
                       </div>
 
-                      <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+                      <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         {plan.features.map((feature, idx) => (
                           <li key={idx} className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
@@ -361,12 +402,12 @@ export default function SubscriptionPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.9 }}
         >
-          <Card className="border-0 shadow-sm bg-white dark:bg-slate-800 dark:border-slate-700">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
                 Subscription History
               </CardTitle>
-              <CardDescription className="text-slate-600 dark:text-slate-400">
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Your past subscriptions and payments
               </CardDescription>
             </CardHeader>

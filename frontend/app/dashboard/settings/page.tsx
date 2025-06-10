@@ -7,15 +7,25 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Settings,
-  Bell,
+  Globe,
   Shield,
-  Palette,
   Database,
   Trash2,
   Download,
+  RefreshCw,
   Moon,
   Sun,
   Monitor,
@@ -25,50 +35,139 @@ import {
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
+const generalSettings = {
+  language: "en",
+  timezone: "Asia/Kolkata",
+  dateFormat: "DD/MM/YYYY",
+  theme: "system",
+  autoSave: true,
+  compactMode: false,
+}
+
+const apiSettings = {
+  defaultTimeout: "30",
+  retryAttempts: "3",
+  rateLimitWarning: true,
+  debugMode: false,
+  logRequests: true,
+  cacheResponses: true,
+}
+
+const securitySettings = {
+  sessionTimeout: "24",
+  ipWhitelist: "",
+  webhookSecret: "wh_secret_key_example",
+  apiKeyRotation: "90",
+  loginNotifications: true,
+  suspiciousActivityAlerts: true,
+}
+
 export default function SettingsPage() {
   const { toast } = useToast()
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    marketingEmails: true,
-    securityAlerts: true,
-    apiRateLimit: "1000",
-    timezone: "Asia/Kolkata",
-    theme: "system",
-    language: "en",
-    autoBackup: true,
-    dataRetention: "90",
-  })
+  const [general, setGeneral] = useState(generalSettings)
+  const [api, setApi] = useState(apiSettings)
+  const [security, setSecurity] = useState(securitySettings)
 
-  const handleSettingChange = (key: string, value: any) => {
-    setSettings((prev) => ({ ...prev, [key]: value }))
+  const handleSaveGeneral = () => {
+    toast({
+      title: "General settings saved",
+      description: "Your general preferences have been updated successfully.",
+    })
   }
 
-  const handleSave = () => {
+  const handleSaveApi = () => {
     toast({
-      title: "Settings saved!",
-      description: "Your preferences have been updated successfully.",
+      title: "API settings saved",
+      description: "Your API configuration has been updated successfully.",
+    })
+  }
+
+  const handleSaveSecurity = () => {
+    toast({
+      title: "Security settings saved",
+      description: "Your security preferences have been updated successfully.",
     })
   }
 
   const handleExportData = () => {
     toast({
-      title: "Export started",
-      description: "Your data export will be ready shortly. We'll email you when it's complete.",
+      title: "Data export started",
+      description: "Your account data is being prepared for download.",
     })
   }
 
   const handleDeleteAccount = () => {
     toast({
       title: "Account deletion requested",
-      description: "Please check your email for confirmation instructions.",
+      description: "We'll send you an email with further instructions.",
       variant: "destructive",
     })
   }
 
+  const handleClearCache = () => {
+    toast({
+      title: "Cache cleared",
+      description: "All cached data has been successfully cleared.",
+    })
+  }
+
+  const getThemeIcon = (theme: string) => {
+    switch (theme) {
+      case "light":
+        return <Sun className="h-4 w-4" />
+      case "dark":
+        return <Moon className="h-4 w-4" />
+      default:
+        return <Monitor className="h-4 w-4" />
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <div className="max-w-4xl mx-auto space-y-8 p-6 lg:p-8">
+    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
+      {/* Animated background circles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
+          animate={{
+            x: [0, 30, -10, 20, 0],
+            y: [0, -40, 10, -20, 0],
+            scale: [1, 1.1, 0.9, 1.05, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
+          animate={{
+            x: [0, -20, 10, -30, 0],
+            y: [0, 30, -20, 10, 0],
+            scale: [1, 0.9, 1.1, 0.95, 1],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
+          animate={{
+            x: [0, 40, -30, 20, 0],
+            y: [0, -20, 40, -10, 0],
+            scale: [1, 1.05, 0.95, 1.1, 1],
+          }}
+          transition={{
+            duration: 35,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-4xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -76,81 +175,181 @@ export default function SettingsPage() {
           transition={{ duration: 0.5 }}
           className="space-y-2"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-                <Settings className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+                <Settings className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 Settings
               </h1>
-              <p className="text-slate-600 mt-1">Manage your account preferences and configurations.</p>
+              <p className="text-slate-600 dark:text-slate-300 mt-1">
+                Manage your application preferences and configurations.
+              </p>
             </div>
-            <Button onClick={handleSave} className="gap-2 bg-blue-600 hover:bg-blue-700">
-              <Save className="h-4 w-4" />
-              Save Changes
-            </Button>
           </div>
         </motion.div>
 
-        {/* Notifications Settings */}
+        {/* General Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Bell className="h-5 w-5 text-blue-600" />
-                Notifications
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                General Settings
               </CardTitle>
-              <CardDescription className="text-slate-600">
-                Configure how you want to receive notifications
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Configure your general application preferences
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-slate-900">Email Notifications</Label>
-                  <p className="text-sm text-slate-600">Receive notifications via email</p>
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="language" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Language
+                  </Label>
+                  <Select
+                    value={general.language}
+                    onValueChange={(value) => setGeneral({ ...general, language: value })}
+                  >
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="en" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        English
+                      </SelectItem>
+                      <SelectItem value="hi" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        हिंदी
+                      </SelectItem>
+                      <SelectItem value="es" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Español
+                      </SelectItem>
+                      <SelectItem value="fr" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Français
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Switch
-                  checked={settings.emailNotifications}
-                  onCheckedChange={(checked) => handleSettingChange("emailNotifications", checked)}
-                />
+
+                <div>
+                  <Label htmlFor="timezone" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Timezone
+                  </Label>
+                  <Select
+                    value={general.timezone}
+                    onValueChange={(value) => setGeneral({ ...general, timezone: value })}
+                  >
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="Asia/Kolkata" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Asia/Kolkata
+                      </SelectItem>
+                      <SelectItem value="America/New_York" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        America/New_York
+                      </SelectItem>
+                      <SelectItem value="Europe/London" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Europe/London
+                      </SelectItem>
+                      <SelectItem value="Asia/Tokyo" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Asia/Tokyo
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="dateFormat" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Date Format
+                  </Label>
+                  <Select
+                    value={general.dateFormat}
+                    onValueChange={(value) => setGeneral({ ...general, dateFormat: value })}
+                  >
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="DD/MM/YYYY" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        DD/MM/YYYY
+                      </SelectItem>
+                      <SelectItem value="MM/DD/YYYY" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        MM/DD/YYYY
+                      </SelectItem>
+                      <SelectItem value="YYYY-MM-DD" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        YYYY-MM-DD
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="theme" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Theme
+                  </Label>
+                  <Select value={general.theme} onValueChange={(value) => setGeneral({ ...general, theme: value })}>
+                    <SelectTrigger className="mt-1 dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="light" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        <div className="flex items-center gap-2">
+                          <Sun className="h-4 w-4" />
+                          Light
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="dark" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        <div className="flex items-center gap-2">
+                          <Moon className="h-4 w-4" />
+                          Dark
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="system" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        <div className="flex items-center gap-2">
+                          <Monitor className="h-4 w-4" />
+                          System
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-slate-900">SMS Notifications</Label>
-                  <p className="text-sm text-slate-600">Receive critical alerts via SMS</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Auto Save</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Automatically save changes as you type</p>
+                  </div>
+                  <Switch
+                    checked={general.autoSave}
+                    onCheckedChange={(checked) => setGeneral({ ...general, autoSave: checked })}
+                  />
                 </div>
-                <Switch
-                  checked={settings.smsNotifications}
-                  onCheckedChange={(checked) => handleSettingChange("smsNotifications", checked)}
-                />
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Compact Mode</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Use a more compact interface layout</p>
+                  </div>
+                  <Switch
+                    checked={general.compactMode}
+                    onCheckedChange={(checked) => setGeneral({ ...general, compactMode: checked })}
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-slate-900">Marketing Emails</Label>
-                  <p className="text-sm text-slate-600">Receive product updates and promotions</p>
-                </div>
-                <Switch
-                  checked={settings.marketingEmails}
-                  onCheckedChange={(checked) => handleSettingChange("marketingEmails", checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-slate-900">Security Alerts</Label>
-                  <p className="text-sm text-slate-600">Get notified about security events</p>
-                </div>
-                <Switch
-                  checked={settings.securityAlerts}
-                  onCheckedChange={(checked) => handleSettingChange("securityAlerts", checked)}
-                />
-              </div>
+              <Button
+                onClick={handleSaveGeneral}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                <Save className="h-4 w-4" />
+                Save General Settings
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -161,187 +360,299 @@ export default function SettingsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Database className="h-5 w-5 text-emerald-600" />
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 API Configuration
               </CardTitle>
-              <CardDescription className="text-slate-600">Configure your API settings and limits</CardDescription>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Configure API behavior and performance settings
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="rateLimit" className="text-sm font-medium text-slate-700">
-                    Rate Limit (requests/hour)
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="timeout" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Default Timeout (seconds)
                   </Label>
                   <Input
-                    id="rateLimit"
-                    value={settings.apiRateLimit}
-                    onChange={(e) => handleSettingChange("apiRateLimit", e.target.value)}
-                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200"
+                    id="timeout"
+                    type="number"
+                    value={api.defaultTimeout}
+                    onChange={(e) => setApi({ ...api, defaultTimeout: e.target.value })}
+                    className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone" className="text-sm font-medium text-slate-700">
-                    Timezone
+
+                <div>
+                  <Label htmlFor="retryAttempts" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Retry Attempts
                   </Label>
-                  <Select value={settings.timezone} onValueChange={(value) => handleSettingChange("timezone", value)}>
-                    <SelectTrigger className="bg-slate-50 border-slate-200 focus:bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Asia/Kolkata">Asia/Kolkata (IST)</SelectItem>
-                      <SelectItem value="America/New_York">America/New_York (EST)</SelectItem>
-                      <SelectItem value="Europe/London">Europe/London (GMT)</SelectItem>
-                      <SelectItem value="Asia/Tokyo">Asia/Tokyo (JST)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="retryAttempts"
+                    type="number"
+                    value={api.retryAttempts}
+                    onChange={(e) => setApi({ ...api, retryAttempts: e.target.value })}
+                    className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                  />
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Rate Limit Warning</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Show warnings when approaching rate limits
+                    </p>
+                  </div>
+                  <Switch
+                    checked={api.rateLimitWarning}
+                    onCheckedChange={(checked) => setApi({ ...api, rateLimitWarning: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Debug Mode</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Enable detailed API debugging information
+                    </p>
+                  </div>
+                  <Switch
+                    checked={api.debugMode}
+                    onCheckedChange={(checked) => setApi({ ...api, debugMode: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Log Requests</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Keep logs of all API requests</p>
+                  </div>
+                  <Switch
+                    checked={api.logRequests}
+                    onCheckedChange={(checked) => setApi({ ...api, logRequests: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Cache Responses</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Cache API responses for better performance
+                    </p>
+                  </div>
+                  <Switch
+                    checked={api.cacheResponses}
+                    onCheckedChange={(checked) => setApi({ ...api, cacheResponses: checked })}
+                  />
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSaveApi}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                <Save className="h-4 w-4" />
+                Save API Settings
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Appearance Settings */}
+        {/* Security Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Palette className="h-5 w-5 text-purple-600" />
-                Appearance
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                Security Settings
               </CardTitle>
-              <CardDescription className="text-slate-600">
-                Customize the look and feel of your dashboard
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Configure security and access control settings
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-slate-700">Theme</Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { value: "light", label: "Light", icon: Sun },
-                    { value: "dark", label: "Dark", icon: Moon },
-                    { value: "system", label: "System", icon: Monitor },
-                  ].map((theme) => {
-                    const IconComponent = theme.icon
-                    return (
-                      <button
-                        key={theme.value}
-                        onClick={() => handleSettingChange("theme", theme.value)}
-                        className={`p-3 rounded-xl border-2 transition-all duration-200 ${
-                          settings.theme === theme.value
-                            ? "border-blue-500 bg-blue-50"
-                            : "border-slate-200 hover:border-slate-300"
-                        }`}
-                      >
-                        <IconComponent className="h-5 w-5 mx-auto mb-2 text-slate-600" />
-                        <p className="text-sm font-medium text-slate-900">{theme.label}</p>
-                      </button>
-                    )
-                  })}
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="sessionTimeout" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Session Timeout (hours)
+                  </Label>
+                  <Input
+                    id="sessionTimeout"
+                    type="number"
+                    value={security.sessionTimeout}
+                    onChange={(e) => setSecurity({ ...security, sessionTimeout: e.target.value })}
+                    className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="apiKeyRotation" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    API Key Rotation (days)
+                  </Label>
+                  <Input
+                    id="apiKeyRotation"
+                    type="number"
+                    value={security.apiKeyRotation}
+                    onChange={(e) => setSecurity({ ...security, apiKeyRotation: e.target.value })}
+                    className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                  />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="language" className="text-sm font-medium text-slate-700">
-                  Language
+              <div>
+                <Label htmlFor="ipWhitelist" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  IP Whitelist (comma-separated)
                 </Label>
-                <Select value={settings.language} onValueChange={(value) => handleSettingChange("language", value)}>
-                  <SelectTrigger className="bg-slate-50 border-slate-200 focus:bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Español</SelectItem>
-                    <SelectItem value="fr">Français</SelectItem>
-                    <SelectItem value="de">Deutsch</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="ipWhitelist"
+                  placeholder="192.168.1.1, 10.0.0.1"
+                  value={security.ipWhitelist}
+                  onChange={(e) => setSecurity({ ...security, ipWhitelist: e.target.value })}
+                  className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                />
               </div>
+
+              <div>
+                <Label htmlFor="webhookSecret" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Webhook Secret Key
+                </Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="webhookSecret"
+                    type="password"
+                    value={security.webhookSecret}
+                    onChange={(e) => setSecurity({ ...security, webhookSecret: e.target.value })}
+                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Generate
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Login Notifications</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">Get notified of new login attempts</p>
+                  </div>
+                  <Switch
+                    checked={security.loginNotifications}
+                    onCheckedChange={(checked) => setSecurity({ ...security, loginNotifications: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-slate-900 dark:text-white">Suspicious Activity Alerts</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Get alerts for unusual account activity
+                    </p>
+                  </div>
+                  <Switch
+                    checked={security.suspiciousActivityAlerts}
+                    onCheckedChange={(checked) => setSecurity({ ...security, suspiciousActivityAlerts: checked })}
+                  />
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSaveSecurity}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                <Save className="h-4 w-4" />
+                Save Security Settings
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Data & Privacy */}
+        {/* Data Management */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Shield className="h-5 w-5 text-amber-600" />
-                Data & Privacy
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                Data Management
               </CardTitle>
-              <CardDescription className="text-slate-600">Manage your data and privacy settings</CardDescription>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Manage your account data and storage
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-slate-900">Auto Backup</Label>
-                  <p className="text-sm text-slate-600">Automatically backup your data daily</p>
-                </div>
-                <Switch
-                  checked={settings.autoBackup}
-                  onCheckedChange={(checked) => handleSettingChange("autoBackup", checked)}
-                />
-              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Button
+                  onClick={handleExportData}
+                  variant="outline"
+                  className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Account Data
+                </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="dataRetention" className="text-sm font-medium text-slate-700">
-                  Data Retention (days)
-                </Label>
-                <Input
-                  id="dataRetention"
-                  value={settings.dataRetention}
-                  onChange={(e) => handleSettingChange("dataRetention", e.target.value)}
-                  className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200"
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <Button onClick={handleExportData} variant="outline" className="w-full justify-start gap-3 h-12">
-                  <Download className="h-4 w-4 text-blue-600" />
-                  Export My Data
+                <Button
+                  onClick={handleClearCache}
+                  variant="outline"
+                  className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Clear Cache
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
 
-        {/* Danger Zone */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <Card className="border-0 shadow-sm bg-white border-red-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-red-600 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Danger Zone
-              </CardTitle>
-              <CardDescription className="text-slate-600">Irreversible and destructive actions</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-red-900">Delete Account</h4>
-                    <p className="text-sm text-red-700">Permanently delete your account and all associated data</p>
+              <div className="p-4 rounded-xl border border-red-200 bg-red-50 dark:border-red-800/40 dark:bg-red-900/20">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-3 flex-1">
+                    <div>
+                      <h4 className="font-medium text-red-900 dark:text-red-300">Danger Zone</h4>
+                      <p className="text-sm text-red-800 dark:text-red-200 mt-1">
+                        These actions are irreversible. Please proceed with caution.
+                      </p>
+                    </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" className="gap-2">
+                          <Trash2 className="h-4 w-4" />
+                          Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="dark:bg-slate-900 dark:border-slate-700">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="dark:text-white">Are you absolutely sure?</AlertDialogTitle>
+                          <AlertDialogDescription className="dark:text-slate-300">
+                            This action cannot be undone. This will permanently delete your account and remove all your
+                            data from our servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                            Delete Account
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                  <Button onClick={handleDeleteAccount} variant="destructive" className="gap-2">
-                    <Trash2 className="h-4 w-4" />
-                    Delete Account
-                  </Button>
                 </div>
               </div>
             </CardContent>

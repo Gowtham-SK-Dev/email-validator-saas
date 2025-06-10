@@ -11,13 +11,19 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Zap } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-provider"
 
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { login, isLoading: authLoading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  })
+  const [errors, setErrors] = useState({
     username: "",
     password: "",
   })
@@ -25,33 +31,91 @@ export default function LoginPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+
+    // Clear error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors = {
+      username: "",
+      password: "",
+    }
+
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required"
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required"
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters"
+    }
+
+    setErrors(newErrors)
+    return !newErrors.username && !newErrors.password
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log("🚀 Login form submitted")
+
+    if (!validateForm()) {
+      console.log("❌ Form validation failed")
+      return
+    }
+
     setIsLoading(true)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      console.log("🔐 Attempting login with:", { username: formData.username })
 
+      // Call the real login API
+      const response = await login(formData.username, formData.password)
+      console.log("✅ Login successful:", response)
+
+      // Show success message
       toast({
         title: "Welcome back!",
         description: "Login successful. Redirecting to dashboard...",
       })
 
+      // Small delay for better UX, then redirect
       setTimeout(() => {
+        console.log("🔄 Redirecting to dashboard...")
         router.push("/dashboard")
       }, 1000)
-    } catch (error) {
+    } catch (error: any) {
+      console.error("❌ Login error:", error)
+
+      // Handle different types of errors
+      let errorMessage = "Login failed. Please try again."
+
+      if (error.message) {
+        errorMessage = error.message
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.status === 401) {
+        errorMessage = "Invalid username or password"
+      } else if (error.status === 429) {
+        errorMessage = "Too many login attempts. Please try again later."
+      } else if (error.status >= 500) {
+        errorMessage = "Server error. Please try again later."
+      }
+
       toast({
-        title: "Login failed",
-        description: "Please check your credentials and try again.",
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
       setIsLoading(false)
     }
   }
+
+  const isFormLoading = isLoading || authLoading
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 flex items-center justify-center p-4 relative overflow-hidden">
@@ -145,9 +209,13 @@ export default function LoginPage() {
                         required
                         value={formData.username}
                         onChange={handleChange}
-                        className="pl-10 h-12 border-2 focus:border-blue-500 transition-all duration-300"
+                        className={`pl-10 h-12 border-2 focus:border-blue-500 transition-all duration-300 ${
+                          errors.username ? "border-red-500 focus:border-red-500" : ""
+                        }`}
+                        disabled={isFormLoading}
                       />
                     </div>
+                    {errors.username && <p className="text-sm text-red-500 mt-1">{errors.username}</p>}
                   </motion.div>
 
                   <motion.div
@@ -165,6 +233,7 @@ export default function LoginPage() {
                         className="px-0 font-normal text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                         type="button"
                         onClick={() => router.push("/forgot-password")}
+                        disabled={isFormLoading}
                       >
                         Forgot password?
                       </Button>
@@ -179,7 +248,10 @@ export default function LoginPage() {
                         required
                         value={formData.password}
                         onChange={handleChange}
-                        className="pl-10 pr-10 h-12 border-2 focus:border-blue-500 transition-all duration-300"
+                        className={`pl-10 pr-10 h-12 border-2 focus:border-blue-500 transition-all duration-300 ${
+                          errors.password ? "border-red-500 focus:border-red-500" : ""
+                        }`}
+                        disabled={isFormLoading}
                       />
                       <Button
                         type="button"
@@ -187,6 +259,7 @@ export default function LoginPage() {
                         size="sm"
                         className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isFormLoading}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4 text-gray-400" />
@@ -195,6 +268,7 @@ export default function LoginPage() {
                         )}
                       </Button>
                     </div>
+                    {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
                   </motion.div>
                 </div>
               </CardContent>
@@ -205,20 +279,23 @@ export default function LoginPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, duration: 0.6 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: isFormLoading ? 1 : 1.02 }}
+                  whileTap={{ scale: isFormLoading ? 1 : 0.98 }}
                 >
                   <Button
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                     type="submit"
-                    disabled={isLoading}
+                    disabled={isFormLoading}
                   >
-                    {isLoading ? (
-                      <motion.div
-                        className="h-5 w-5 border-2 border-white border-t-transparent rounded-full"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                      />
+                    {isFormLoading ? (
+                      <div className="flex items-center">
+                        <motion.div
+                          className="h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                        />
+                        Signing In...
+                      </div>
                     ) : (
                       "Sign In"
                     )}

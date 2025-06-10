@@ -21,4 +21,5 @@ router.get("/api-usage", getApiUsageStats)
 router.get("/subscriptions", getUserSubscriptions)
 router.get("/click-history", getClickHistory)
 
+
 export default router

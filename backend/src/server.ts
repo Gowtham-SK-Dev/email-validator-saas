@@ -72,6 +72,9 @@ app.get("/", (_req, res) => {
       auth: {
         register: "POST /api/auth/register",
         login: "POST /api/auth/login",
+        logout: "POST /api/auth/logout",
+        logoutAll: "POST /api/auth/logout-all",
+        refreshToken: "POST /api/auth/refresh-token",
         verifyOtp: "POST /api/auth/verify-otp",
         forgotPassword: "POST /api/auth/forgot-password",
         resetPassword: "POST /api/auth/reset-password",
@@ -147,7 +150,7 @@ app.listen(PORT, HOST, () => {
     console.log(`📊 Health check (Public): http://${publicIp}:${PORT}/health`)
     console.log(`📖 API Documentation (Public): http://${publicIp}:${PORT}/`)
   }
-  console.log(`🌍 Environment: ${process.env['NODE_ENV'] || 'development'}`)
+  console.log(`🌍 Environment: ${process.env["NODE_ENV"] || "development"}`)
   console.log(`📖 API Documentation: http://localhost:${PORT}/`)
 })
 

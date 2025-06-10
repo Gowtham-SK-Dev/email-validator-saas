@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Bell, Menu, User, Search, Settings } from "lucide-react"
+import { Bell, Menu, User, Search, Settings, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -16,8 +17,36 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/dashboard/sidebar"
+import { useAuth } from "@/lib/hooks/use-auth"
+import { toast } from "sonner"
+import { useState } from "react"
 
 export function Navbar() {
+  const router = useRouter()
+  const { user, logout } = useAuth()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleSignOut = async () => {
+    if (isLoggingOut) return
+
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+      toast.success("Logged out successfully")
+
+      // Small delay for better UX
+      setTimeout(() => {
+        router.push("/login")
+      }, 500)
+    } catch (error: any) {
+      console.error("Logout error:", error)
+      toast.error(error.message || "Failed to logout. Please try again.")
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-xl dark:bg-slate-900/80 dark:border-slate-800/60">
       <div className="flex h-16 items-center justify-between px-6 lg:px-8">
@@ -77,8 +106,10 @@ export function Navbar() {
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-slate-900 dark:text-slate-200">John Doe</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">john@example.com</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
+                    {user?.username || "John Doe"}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email || "john@example.com"}</p>
                 </div>
               </motion.button>
             </DropdownMenuTrigger>
@@ -104,13 +135,13 @@ export function Navbar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="dark:bg-slate-800" />
-              <DropdownMenuItem asChild>
-                <Link
-                  href="/login"
-                  className="text-red-600 dark:text-red-400 cursor-pointer dark:focus:bg-slate-800 dark:focus:text-red-300"
-                >
-                  Sign out
-                </Link>
+              <DropdownMenuItem
+                onClick={handleSignOut}
+                disabled={isLoggingOut}
+                className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 dark:focus:bg-slate-800 dark:focus:text-red-300 focus:text-red-600 dark:focus:text-red-300"
+              >
+                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? "Signing out..." : "Sign out"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

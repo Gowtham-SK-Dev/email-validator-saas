@@ -4,6 +4,7 @@ import { Inter, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/components/auth/auth-provider"
 
 // Configure fonts with proper subsets and weights
 const inter = Inter({
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   title: "EmailVerify - Professional Email Verification API",
   description:
     "Verify emails with 99.9% accuracy using our reliable API service. Reduce bounce rates and improve deliverability.",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -36,7 +37,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${dmSans.variable}`}>
       <body className={`${inter.className} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>

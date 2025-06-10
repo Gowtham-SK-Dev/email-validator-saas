@@ -28,6 +28,8 @@ const reportTypes = [
     formats: ["PDF", "CSV", "Excel"],
     color: "text-blue-600",
     bgColor: "bg-blue-50",
+    darkBgColor: "dark:bg-blue-900/30",
+    darkColor: "dark:text-blue-400",
   },
   {
     id: "verification",
@@ -37,6 +39,8 @@ const reportTypes = [
     formats: ["PDF", "CSV"],
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
+    darkBgColor: "dark:bg-emerald-900/30",
+    darkColor: "dark:text-emerald-400",
   },
   {
     id: "billing",
@@ -46,6 +50,8 @@ const reportTypes = [
     formats: ["PDF"],
     color: "text-purple-600",
     bgColor: "bg-purple-50",
+    darkBgColor: "dark:bg-purple-900/30",
+    darkColor: "dark:text-purple-400",
   },
   {
     id: "performance",
@@ -55,6 +61,8 @@ const reportTypes = [
     formats: ["PDF", "CSV"],
     color: "text-amber-600",
     bgColor: "bg-amber-50",
+    darkBgColor: "dark:bg-amber-900/30",
+    darkColor: "dark:text-amber-400",
   },
 ]
 
@@ -119,32 +127,91 @@ export default function ReportsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Completed</Badge>
+        return (
+          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/60">
+            Completed
+          </Badge>
+        )
       case "processing":
-        return <Badge className="bg-amber-50 text-amber-700 border-amber-200">Processing</Badge>
+        return (
+          <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/60">
+            Processing
+          </Badge>
+        )
       case "failed":
-        return <Badge className="bg-red-50 text-red-700 border-red-200">Failed</Badge>
+        return (
+          <Badge className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/60">
+            Failed
+          </Badge>
+        )
       default:
-        return <Badge variant="secondary">Unknown</Badge>
+        return (
+          <Badge variant="secondary" className="dark:bg-slate-800 dark:text-slate-300">
+            Unknown
+          </Badge>
+        )
     }
   }
 
   const getFormatIcon = (format: string) => {
     switch (format.toLowerCase()) {
       case "pdf":
-        return <FileText className="h-4 w-4 text-red-500" />
+        return <FileText className="h-4 w-4 text-red-500 dark:text-red-400" />
       case "csv":
-        return <FileSpreadsheet className="h-4 w-4 text-green-500" />
+        return <FileSpreadsheet className="h-4 w-4 text-green-500 dark:text-green-400" />
       case "excel":
-        return <FileSpreadsheet className="h-4 w-4 text-emerald-500" />
+        return <FileSpreadsheet className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
       default:
-        return <FileImage className="h-4 w-4 text-slate-500" />
+        return <FileImage className="h-4 w-4 text-slate-500 dark:text-slate-400" />
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <div className="max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
+    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
+      {/* Animated background circles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
+          animate={{
+            x: [0, 30, -10, 20, 0],
+            y: [0, -40, 10, -20, 0],
+            scale: [1, 1.1, 0.9, 1.05, 1],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
+          animate={{
+            x: [0, -20, 10, -30, 0],
+            y: [0, 30, -20, 10, 0],
+            scale: [1, 0.9, 1.1, 0.95, 1],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
+          animate={{
+            x: [0, 40, -30, 20, 0],
+            y: [0, -20, 40, -10, 0],
+            scale: [1, 1.05, 0.95, 1.1, 1],
+          }}
+          transition={{
+            duration: 35,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -154,11 +221,13 @@ export default function ReportsPage() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-                <FileText className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
+                <FileText className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 Reports
               </h1>
-              <p className="text-slate-600 mt-1">Generate and download detailed reports about your usage.</p>
+              <p className="text-slate-600 dark:text-slate-300 mt-1">
+                Generate and download detailed reports about your usage.
+              </p>
             </div>
           </div>
         </motion.div>
@@ -169,99 +238,103 @@ export default function ReportsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">Generate New Report</CardTitle>
-              <CardDescription className="text-slate-600">
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                Generate New Report
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
                 Create custom reports for your data analysis needs
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Time Period</label>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">
+                    Time Period
+                  </label>
                   <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                    <SelectTrigger className="bg-slate-50 border-slate-200 focus:bg-white">
+                    <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="last-7-days">Last 7 days</SelectItem>
-                      <SelectItem value="last-30-days">Last 30 days</SelectItem>
-                      <SelectItem value="last-90-days">Last 90 days</SelectItem>
-                      <SelectItem value="last-year">Last year</SelectItem>
-                      <SelectItem value="custom">Custom range</SelectItem>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="last-7-days" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Last 7 days
+                      </SelectItem>
+                      <SelectItem value="last-30-days" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Last 30 days
+                      </SelectItem>
+                      <SelectItem value="last-90-days" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Last 90 days
+                      </SelectItem>
+                      <SelectItem value="this-year" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        This year
+                      </SelectItem>
+                      <SelectItem value="custom" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Custom range
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700">Format</label>
+                <div className="flex-1">
+                  <label className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 block">Format</label>
                   <Select value={selectedFormat} onValueChange={setSelectedFormat}>
-                    <SelectTrigger className="bg-slate-50 border-slate-200 focus:bg-white">
+                    <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pdf">PDF</SelectItem>
-                      <SelectItem value="csv">CSV</SelectItem>
-                      <SelectItem value="excel">Excel</SelectItem>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="pdf" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        PDF
+                      </SelectItem>
+                      <SelectItem value="csv" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        CSV
+                      </SelectItem>
+                      <SelectItem value="excel" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Excel
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {reportTypes.map((report, index) => (
+                  <motion.div
+                    key={report.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                    className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200 cursor-pointer group"
+                    onClick={() => generateReport(report.name)}
+                  >
+                    <div className="space-y-3">
+                      <div className={`p-3 rounded-lg ${report.bgColor} ${report.darkBgColor} w-fit`}>
+                        <report.icon className={`h-6 w-6 ${report.color} ${report.darkColor}`} />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          {report.name}
+                        </h4>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{report.description}</p>
+                        <div className="flex gap-1 mt-2">
+                          {report.formats.map((format) => (
+                            <Badge
+                              key={format}
+                              variant="outline"
+                              className="text-xs dark:border-slate-700 dark:text-slate-300"
+                            >
+                              {format}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </motion.div>
-
-        {/* Report Types */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {reportTypes.map((report, index) => {
-            const IconComponent = report.icon
-            return (
-              <motion.div
-                key={report.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-              >
-                <Card className="border-0 shadow-sm bg-white hover:shadow-md transition-all duration-300">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-4 flex-1">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-3 rounded-2xl ${report.bgColor}`}>
-                            <IconComponent className={`h-6 w-6 ${report.color}`} />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-slate-900">{report.name}</h3>
-                            <p className="text-sm text-slate-600">{report.description}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-500">Available formats:</span>
-                          <div className="flex gap-1">
-                            {report.formats.map((format) => (
-                              <Badge key={format} variant="outline" className="text-xs">
-                                {format}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={() => generateReport(report.name)}
-                        className="gap-2 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <Download className="h-4 w-4" />
-                        Generate
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )
-          })}
-        </div>
 
         {/* Recent Reports */}
         <motion.div
@@ -269,10 +342,12 @@ export default function ReportsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">Recent Reports</CardTitle>
-              <CardDescription className="text-slate-600">Your previously generated reports</CardDescription>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Recent Reports</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Your previously generated reports
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -282,21 +357,24 @@ export default function ReportsPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
-                    className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 transition-colors duration-200"
+                    className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors duration-200"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800">
                         {getFormatIcon(report.format)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-slate-900 truncate">{report.name}</h4>
-                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                        <h4 className="font-medium text-slate-900 dark:text-white truncate">{report.name}</h4>
+                        <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mt-1">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {report.generated}
                           </span>
-                          <span>{report.type}</span>
                           <span>{report.size}</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {report.type}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -307,17 +385,11 @@ export default function ReportsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => downloadReport(report.name)}
-                          className="gap-2"
+                          className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                         >
                           <Download className="h-4 w-4" />
                           Download
                         </Button>
-                      )}
-                      {report.status === "processing" && (
-                        <div className="flex items-center gap-2 text-sm text-amber-600">
-                          <Clock className="h-4 w-4 animate-spin" />
-                          Processing...
-                        </div>
                       )}
                     </div>
                   </motion.div>
