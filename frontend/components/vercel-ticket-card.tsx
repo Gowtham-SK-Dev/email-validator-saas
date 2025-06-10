@@ -163,7 +163,7 @@ export default function VercelTicketCard({ user, className = "" }: VercelTicketC
               transition={{ duration: 0.6, delay: 0.4 }}
             >
               <div>
-                <p className="text-indigo-200 text-sm font-medium tracking-wide">VERCEL SHIP</p>
+                <p className="text-indigo-200 text-sm font-medium tracking-wide">INFOSENSE ID</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   <span className="text-indigo-100 text-xs">{user.plan}</span>

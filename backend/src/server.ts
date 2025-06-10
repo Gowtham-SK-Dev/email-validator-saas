@@ -4,6 +4,7 @@ import helmet from "helmet"
 import morgan from "morgan"
 import dotenv from "dotenv"
 import rateLimit from "express-rate-limit"
+import os from "os"
 
 // Import routes
 import authRoutes from "./routes/auth.routes"
@@ -17,7 +18,8 @@ import adminRoutes from "./routes/admin.routes"
 dotenv.config()
 
 const app = express()
-const PORT = process.env["PORT"] || 5000
+const PORT = Number(process.env["PORT"]) || 5000
+const HOST = "0.0.0.0" // Listen on all interfaces for public IP access
 
 // Security middleware
 app.use(helmet())
@@ -127,11 +129,26 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 })
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
+  const interfaces = os.networkInterfaces()
+  let publicIp = ""
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]!) {
+      if (iface.family === "IPv4" && !iface.internal) {
+        publicIp = iface.address
+        break
+      }
+    }
+    if (publicIp) break
+  }
   console.log(`🚀 Server running on port ${PORT}`)
   console.log(`📊 Health check: http://localhost:${PORT}/health`)
-  console.log(`📚 API Documentation: http://localhost:${PORT}/`)
-  console.log(`🌍 Environment: ${process.env["NODE_ENV"] || "development"}`)
+  if (publicIp) {
+    console.log(`📊 Health check (Public): http://${publicIp}:${PORT}/health`)
+    console.log(`📖 API Documentation (Public): http://${publicIp}:${PORT}/`)
+  }
+  console.log(`🌍 Environment: ${process.env['NODE_ENV'] || 'development'}`)
+  console.log(`📖 API Documentation: http://localhost:${PORT}/`)
 })
 
 // Graceful shutdown
