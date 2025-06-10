@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "Email Verification SaaS Backend API",
   "main": "dist/server.js",
+  "author": "Gowtham Kulandhaivel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gowtham-SK-Dev/email-validator-saas.git"
+  },
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc",
@@ -12,7 +17,6 @@
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "keywords": ["email", "verification", "saas", "api", "nodejs", "typescript"],
-  "author": "Your Name",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
