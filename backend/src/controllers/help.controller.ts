@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { createHelpRequest, getHelpRequestsByUserId } from "../models/help.model"
 
-// Create new help request
+
 export const submitHelpRequest = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
@@ -12,7 +12,7 @@ export const submitHelpRequest = async (req: Request, res: Response): Promise<vo
     const { message } = req.body
     const userId = req.user.id
 
-    // Create help request
+    
     const helpId = await createHelpRequest({
       user_id: userId,
       message,
@@ -28,7 +28,7 @@ export const submitHelpRequest = async (req: Request, res: Response): Promise<vo
   }
 }
 
-// Get user help requests
+
 export const getUserHelpRequests = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {
@@ -38,7 +38,7 @@ export const getUserHelpRequests = async (req: Request, res: Response): Promise<
 
     const userId = req.user.id
 
-    // Get help requests
+    
     const helpRequests = await getHelpRequestsByUserId(userId)
 
     res.status(200).json({ helpRequests })

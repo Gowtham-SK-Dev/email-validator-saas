@@ -42,7 +42,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    // Generate API key and secret
+    
     const api_key = `sk-${uuidv4()}`
     const api_secret = uuidv4()
 
@@ -97,7 +97,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, password } = req.body
 
-    // Check if user exists with username or email
+    
     let user = await getUserByUsername(username)
     if (!user) {
       user = await getUserByEmail(username)
@@ -107,7 +107,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    // Check if account is active
+
     if (!user.is_active) {
       res.status(401).json({ success: false, message: "Account is not activated. Please verify your email." })
       return
@@ -136,7 +136,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       expiresIn: refreshTokenExpiresIn,
     })
 
-    // Calculate expiration time in seconds
+    
     const expiresIn = 7 * 24 * 60 * 60 // 7 days in seconds
 
     // Remove sensitive data from user object
@@ -206,7 +206,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
   }
 }
 
-// Send OTP (for other verifications)
+
 export const sendOtp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
@@ -229,7 +229,7 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
-// Refresh token endpoint
+
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
     const { refreshToken } = req.body
@@ -239,7 +239,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    // Verify refresh token
+    
     const decoded = jwt.verify(refreshToken, process.env["JWT_SECRET"] as string) as any
 
     if (decoded.type !== "refresh") {
@@ -247,7 +247,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    // Get user details
+    
     const user = await getUserById(decoded.id)
     if (!user) {
       res.status(401).json({ success: false, message: "User not found" })
@@ -294,7 +294,7 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
   }
 }
 
-// Logout endpoint
+
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     const authHeader = req.headers.authorization
@@ -324,7 +324,7 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
-// Logout from all devices (invalidate all tokens for user)
+
 export const logoutAll = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {

@@ -45,12 +45,14 @@ const limiter = rateLimit({
 
 app.use(limiter)
 
-// Body parsing middleware
-app.use(express.json({ limit: "10mb" }))
-app.use(express.urlencoded({ extended: true, limit: "10mb" }))
+// Body parsing middleware (reduce limit for low-memory)
+app.use(express.json({ limit: "1mb" }))
+app.use(express.urlencoded({ extended: true, limit: "1mb" }))
 
-// Logging middleware
-app.use(morgan("combined"))
+// Logging middleware (disable in production)
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("combined"))
+}
 
 // Health check endpoint
 app.get("/health", (_req, res) => {

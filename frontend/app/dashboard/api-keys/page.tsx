@@ -6,59 +6,72 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Key,
-  Plus,
-  Copy,
-  Eye,
-  EyeOff,
-  Trash2,
-  RotateCcw,
-  Calendar,
-  Shield,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Key, Plus, Copy, Eye, EyeOff, Trash2, Calendar, Activity, Shield } from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 const apiKeys = [
   {
-    id: 1,
+    id: "1",
     name: "Production API Key",
-    key: "sk_live_51HG4rDKs9Xj8qM6O3gJ5v2vM",
-    created: "2024-03-15",
+    key: "sk-proj-abc123def456ghi789jkl012mno345pqr678stu901vwx234yz",
+    created: "2024-01-15",
     lastUsed: "2 hours ago",
+    requests: 15420,
     status: "active",
     permissions: ["read", "write"],
   },
   {
-    id: 2,
+    id: "2",
     name: "Development API Key",
-    key: "sk_test_51HG4rDKs9Xj8qM6O3gJ5v2vM",
-    created: "2024-03-10",
+    key: "sk-dev-xyz789abc123def456ghi789jkl012mno345pqr678stu901",
+    created: "2024-02-01",
     lastUsed: "1 day ago",
+    requests: 3240,
     status: "active",
     permissions: ["read"],
   },
   {
-    id: 3,
-    name: "Staging API Key",
-    key: "sk_test_51HG4rDKs9Xj8qM6O3gJ5v2vM",
-    created: "2024-02-28",
-    lastUsed: "Never",
+    id: "3",
+    name: "Testing API Key",
+    key: "sk-test-mno345pqr678stu901vwx234yz567abc123def456ghi789",
+    created: "2024-02-10",
+    lastUsed: "5 days ago",
+    requests: 890,
     status: "inactive",
-    permissions: ["read", "write"],
+    permissions: ["read"],
   },
 ]
 
 export default function ApiKeysPage() {
   const { toast } = useToast()
-  const [visibleKeys, setVisibleKeys] = useState<number[]>([])
-  const [newKeyName, setNewKeyName] = useState("")
+  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set())
+  const [newKeyForm, setNewKeyForm] = useState({
+    name: "",
+    permissions: "read",
+    description: "",
+  })
 
-  const toggleKeyVisibility = (keyId: number) => {
-    setVisibleKeys((prev) => (prev.includes(keyId) ? prev.filter((id) => id !== keyId) : [...prev, keyId]))
+  const toggleKeyVisibility = (keyId: string) => {
+    const newVisible = new Set(visibleKeys)
+    if (newVisible.has(keyId)) {
+      newVisible.delete(keyId)
+    } else {
+      newVisible.add(keyId)
+    }
+    setVisibleKeys(newVisible)
   }
 
   const copyToClipboard = (text: string) => {
@@ -69,23 +82,8 @@ export default function ApiKeysPage() {
     })
   }
 
-  const regenerateKey = (keyName: string) => {
-    toast({
-      title: "API key regenerated",
-      description: `${keyName} has been regenerated successfully.`,
-    })
-  }
-
-  const deleteKey = (keyName: string) => {
-    toast({
-      title: "API key deleted",
-      description: `${keyName} has been deleted permanently.`,
-      variant: "destructive",
-    })
-  }
-
-  const createNewKey = () => {
-    if (!newKeyName.trim()) {
+  const createApiKey = () => {
+    if (!newKeyForm.name) {
       toast({
         title: "Name required",
         description: "Please enter a name for your API key.",
@@ -96,14 +94,43 @@ export default function ApiKeysPage() {
 
     toast({
       title: "API key created",
-      description: `${newKeyName} has been created successfully.`,
+      description: `${newKeyForm.name} has been created successfully.`,
     })
-    setNewKeyName("")
+
+    setNewKeyForm({
+      name: "",
+      permissions: "read",
+      description: "",
+    })
+  }
+
+  const deleteApiKey = (keyName: string) => {
+    toast({
+      title: "API key deleted",
+      description: `${keyName} has been deleted successfully.`,
+      variant: "destructive",
+    })
+  }
+
+  const getStatusBadge = (status: string) => {
+    return status === "active" ? (
+      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/60">
+        Active
+      </Badge>
+    ) : (
+      <Badge className="bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+        Inactive
+      </Badge>
+    )
+  }
+
+  const maskApiKey = (key: string) => {
+    return key.substring(0, 12) + "..." + key.substring(key.length - 8)
   }
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Animated background circles */}
+    <div className="relative min-h-screen bg-transparent overflow-hidden">
+      {/* Page-specific animated background circles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
@@ -164,10 +191,14 @@ export default function ApiKeysPage() {
                 Manage your API keys for secure access to our services.
               </p>
             </div>
+            <Button className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white w-fit">
+              <Plus className="h-4 w-4" />
+              Create New Key
+            </Button>
           </div>
         </motion.div>
 
-        {/* Create New Key */}
+        {/* Create New API Key */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,172 +212,194 @@ export default function ApiKeysPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-4">
-                <div className="flex-1">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
                   <Label htmlFor="keyName" className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                    Key Name
+                    Key Name *
                   </Label>
                   <Input
                     id="keyName"
                     placeholder="e.g., Production API Key"
-                    value={newKeyName}
-                    onChange={(e) => setNewKeyName(e.target.value)}
-                    className="mt-1 bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    value={newKeyForm.name}
+                    onChange={(e) => setNewKeyForm({ ...newKeyForm, name: e.target.value })}
+                    className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
                   />
                 </div>
-                <div className="flex items-end">
-                  <Button
-                    onClick={createNewKey}
-                    className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                <div className="space-y-2">
+                  <Label htmlFor="permissions" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    Permissions
+                  </Label>
+                  <Select
+                    value={newKeyForm.permissions}
+                    onValueChange={(value) => setNewKeyForm({ ...newKeyForm, permissions: value })}
                   >
-                    <Plus className="h-4 w-4" />
-                    Create Key
-                  </Button>
+                    <SelectTrigger className="dark:bg-slate-800 dark:border-slate-700 dark:text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-slate-900 dark:border-slate-700">
+                      <SelectItem value="read" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Read Only
+                      </SelectItem>
+                      <SelectItem value="write" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Read & Write
+                      </SelectItem>
+                      <SelectItem value="admin" className="dark:text-slate-200 dark:focus:bg-slate-800">
+                        Full Access
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Description (Optional)
+                </Label>
+                <Input
+                  id="description"
+                  placeholder="Brief description of this API key's purpose"
+                  value={newKeyForm.description}
+                  onChange={(e) => setNewKeyForm({ ...newKeyForm, description: e.target.value })}
+                  className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                />
+              </div>
+              <Button
+                onClick={createApiKey}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+              >
+                <Plus className="h-4 w-4" />
+                Create API Key
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* API Keys List */}
-        <div className="space-y-4">
-          {apiKeys.map((apiKey, index) => (
-            <motion.div
-              key={apiKey.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-            >
-              <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <div className="space-y-3 flex-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{apiKey.name}</h3>
-                        <Badge
-                          variant={apiKey.status === "active" ? "default" : "secondary"}
-                          className={
-                            apiKey.status === "active"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/60"
-                              : "dark:bg-slate-800 dark:text-slate-300"
-                          }
-                        >
-                          {apiKey.status}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-sm dark:text-slate-300">
-                          {visibleKeys.includes(apiKey.id) ? apiKey.key : "•".repeat(apiKey.key.length)}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleKeyVisibility(apiKey.id)}
-                          className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                          {visibleKeys.includes(apiKey.id) ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => copyToClipboard(apiKey.key)}
-                          className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-slate-500 dark:text-slate-400">Created</p>
-                          <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {apiKey.created}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 dark:text-slate-400">Last Used</p>
-                          <p className="font-medium text-slate-900 dark:text-white">{apiKey.lastUsed}</p>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 dark:text-slate-400">Permissions</p>
-                          <div className="flex gap-1">
-                            {apiKey.permissions.map((permission) => (
-                              <Badge
-                                key={permission}
-                                variant="outline"
-                                className="text-xs dark:border-slate-700 dark:text-slate-300"
-                              >
-                                {permission}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-slate-500 dark:text-slate-400">Status</p>
-                          <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1">
-                            {apiKey.status === "active" ? (
-                              <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                            ) : (
-                              <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                            )}
-                            {apiKey.status}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => regenerateKey(apiKey.name)}
-                        className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                        Regenerate
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteKey(apiKey.name)}
-                        className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 dark:border-slate-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Security Notice */}
+        {/* Existing API Keys */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="border-0 shadow-sm bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/40">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-3">
-                <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-1">Security Best Practices</h4>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• Keep your API keys secure and never share them publicly</li>
-                    <li>• Regenerate keys regularly for enhanced security</li>
-                    <li>• Use different keys for different environments (dev, staging, production)</li>
-                    <li>• Monitor API key usage and revoke unused keys</li>
-                  </ul>
-                </div>
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Your API Keys</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-300">
+                Manage and monitor your existing API keys
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {apiKeys.map((apiKey, index) => (
+                  <motion.div
+                    key={apiKey.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                    className="p-6 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="font-semibold text-slate-900 dark:text-white">{apiKey.name}</h3>
+                            {getStatusBadge(apiKey.status)}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              Created: {apiKey.created}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Activity className="h-3 w-3" />
+                              Last used: {apiKey.lastUsed}
+                            </span>
+                            <span>{apiKey.requests.toLocaleString()} requests</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleKeyVisibility(apiKey.id)}
+                            className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                          >
+                            {visibleKeys.has(apiKey.id) ? (
+                              <>
+                                <EyeOff className="h-3 w-3" />
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3" />
+                                Show
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copyToClipboard(apiKey.key)}
+                            className="gap-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800/40 dark:hover:bg-red-900/20"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="dark:bg-slate-900 dark:border-slate-700">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="dark:text-white">Delete API Key</AlertDialogTitle>
+                                <AlertDialogDescription className="dark:text-slate-300">
+                                  Are you sure you want to delete "{apiKey.name}"? This action cannot be undone and will
+                                  immediately revoke access for any applications using this key.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteApiKey(apiKey.name)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Key className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+                            <code className="text-sm font-mono text-slate-700 dark:text-slate-300">
+                              {visibleKeys.has(apiKey.id) ? apiKey.key : maskApiKey(apiKey.key)}
+                            </code>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <Shield className="h-3 w-3 text-slate-500 dark:text-slate-400" />
+                            <span className="text-slate-600 dark:text-slate-300">
+                              Permissions: {apiKey.permissions.join(", ")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </CardContent>
           </Card>

@@ -4,7 +4,7 @@ import { verifyEmail } from "../services/email-verification.service"
 import { updateUserClickCount } from "../models/user.model"
 import { logClickHistory } from "../models/click-history.model"
 
-// Middleware to authenticate API keys
+
 export const authenticateApiKey = async (req: Request, res: Response, next: Function): Promise<void> => {
   try {
     const apiKey = req.headers["x-api-key"] as string
@@ -33,7 +33,7 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Func
       return
     }
 
-    // Attach user to request
+    
     req.user = {
       id: user.id,
       username: user.username,
@@ -48,7 +48,7 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Func
   }
 }
 
-// Email verification API endpoint
+
 export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email } = req.body
@@ -71,13 +71,13 @@ export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<
 
     const userId = req.user.id
 
-    // Verify email address
+    
     const result = await verifyEmail(email)
 
-    // Deduct click count
+    
     const newClickCount = await updateUserClickCount(userId, -1)
 
-    // Log click history
+    
     await logClickHistory(userId, newClickCount + 1, newClickCount, 1)
 
     res.status(200).json({
@@ -103,7 +103,7 @@ export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<
   }
 }
 
-// Get user API usage
+
 export const getApiUsage = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user || !req.user.id) {

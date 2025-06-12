@@ -5,7 +5,7 @@ import { getAllClickHistory, generateClickHistoryReport } from "../models/click-
 import { getAllHelpRequests, updateHelpRequest } from "../models/help.model"
 import { generateCsv } from "../utils/csvGenerator"
 
-// Get all users
+
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   console.log("Fetching all users...")
   try {
@@ -22,7 +22,6 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
-// Get user by ID
 export const getUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number.parseInt(req.params.id)
@@ -33,7 +32,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
       return
     }
 
-    // Remove sensitive data
+    
     const { password, api_secret, otp, ...userData } = user
 
     res.status(200).json({ user: userData })
@@ -43,7 +42,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
   }
 }
 
-// Update user
+
 export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = Number.parseInt(req.params.id)
@@ -68,7 +67,7 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
   }
 }
 
-// Get all payments
+
 export const getPayments = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -90,7 +89,7 @@ export const getPayments = async (req: Request, res: Response): Promise<void> =>
   }
 }
 
-// Get click history
+
 export const getClickHistories = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -106,7 +105,7 @@ export const getClickHistories = async (req: Request, res: Response): Promise<vo
   }
 }
 
-// Get all help requests
+
 export const getHelpRequests = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -121,7 +120,7 @@ export const getHelpRequests = async (req: Request, res: Response): Promise<void
   }
 }
 
-// Update help request
+
 export const respondToHelpRequest = async (req: Request, res: Response): Promise<void> => {
   try {
     const helpId = Number.parseInt(req.params.id)
@@ -136,7 +135,7 @@ export const respondToHelpRequest = async (req: Request, res: Response): Promise
   }
 }
 
-// Get user statistics
+
 export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const stats = await getUserStats()
@@ -148,17 +147,17 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
   }
 }
 
-// Export click history as CSV
+
 export const exportClickHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     const startDate = (req.query.startDate as string) || ""
     const endDate = (req.query.endDate as string) || ""
     const userId = Number.parseInt(req.query.userId as string) || 0
 
-    // Generate report data
+    
     const reportData = await generateClickHistoryReport(startDate, endDate, userId)
 
-    // Generate CSV
+    
     const csv = generateCsv(reportData, [
       "id",
       "username",
@@ -169,7 +168,7 @@ export const exportClickHistory = async (req: Request, res: Response): Promise<v
       "created_at",
     ])
 
-    // Set headers for file download
+  
     res.setHeader("Content-Type", "text/csv")
     res.setHeader("Content-Disposition", "attachment; filename=click-history-report.csv")
 
