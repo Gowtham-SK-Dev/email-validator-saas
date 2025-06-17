@@ -36,7 +36,7 @@ class ApiClient {
   // Get auth token from localStorage
   private getAuthToken(): string | null {
     if (typeof window === "undefined") return null
-    return localStorage.getItem("auth_token")
+    return localStorage.getItem("auth_token") || "mock_token_123" // Mock token for development
   }
 
   // Set auth token in localStorage
@@ -95,7 +95,7 @@ class ApiClient {
   async request<T = any>(endpoint: string, options: RequestOptions = {}): Promise<ApiResponse<T>> {
     const { method = "GET", body, timeout = this.timeout, requireAuth = true } = options
 
-    const url = `${this.baseUrl}${endpoint}`
+    const url = endpoint.startsWith("http") ? endpoint : `${this.baseUrl}${endpoint}`
     const headers = this.buildHeaders(options)
 
     const controller = new AbortController()

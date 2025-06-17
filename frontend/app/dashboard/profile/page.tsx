@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { motion } from "framer-motion"
+import { Suspense, lazy } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +9,18 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Shield, Key, Bell, Save, Edit3, Download, Share2 } from "lucide-react"
 import { useState } from "react"
-import VercelTicketCard from "@/components/vercel-ticket-card"
+
+// Lazy load heavy components
+const MotionDiv = lazy(() => import("framer-motion").then((mod) => ({ default: mod.motion.div })))
+const VercelTicketCard = lazy(() => import("@/components/vercel-ticket-card"))
+
+// Loading component for suspense
+const ComponentLoader = () => (
+  <div className="animate-pulse">
+    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+  </div>
+)
 
 const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false)
@@ -47,57 +57,16 @@ const ProfilePage = () => {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Animated background circles */}
+      {/* Static background circles - no animation for better performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
-          animate={{
-            x: [0, 30, -10, 20, 0],
-            y: [0, -40, 10, -20, 0],
-            scale: [1, 1.1, 0.9, 1.05, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
-          animate={{
-            x: [0, -20, 10, -30, 0],
-            y: [0, 30, -20, 10, 0],
-            scale: [1, 0.9, 1.1, 0.95, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
-          animate={{
-            x: [0, 40, -30, 20, 0],
-            y: [0, -20, 40, -10, 0],
-            scale: [1, 1.05, 0.95, 1.1, 1],
-          }}
-          transition={{
-            duration: 35,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
+        <div className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl" />
+        <div className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl" />
+        <div className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl" />
       </div>
 
       <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-2"
-        >
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Profile Settings</h1>
@@ -134,17 +103,14 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Vercel Ticket Card */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="lg:col-span-1"
-          >
-            <VercelTicketCard user={userData} />
+          <div className="lg:col-span-1">
+            <Suspense fallback={<ComponentLoader />}>
+              <VercelTicketCard user={userData} />
+            </Suspense>
 
             {/* Card Actions */}
             <div className="grid grid-cols-2 gap-3 mt-8">
@@ -163,15 +129,10 @@ const ProfilePage = () => {
                 Share
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Profile Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-2 space-y-6"
-          >
+          <div className="lg:col-span-2 space-y-6">
             {/* Personal Information */}
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardHeader>
@@ -357,7 +318,7 @@ const ProfilePage = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

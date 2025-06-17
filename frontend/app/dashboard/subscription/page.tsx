@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -94,57 +93,9 @@ export default function SubscriptionPage() {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Animated background circles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
-          animate={{
-            x: [0, 30, -10, 20, 0],
-            y: [0, -40, 10, -20, 0],
-            scale: [1, 1.1, 0.9, 1.05, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
-          animate={{
-            x: [0, -20, 10, -30, 0],
-            y: [0, 30, -20, 10, 0],
-            scale: [1, 0.9, 1.1, 0.95, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
-          animate={{
-            x: [0, 40, -30, 20, 0],
-            y: [0, -20, 40, -10, 0],
-            scale: [1, 1.05, 0.95, 1.1, 1],
-          }}
-          transition={{
-            duration: 35,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-      </div>
-
       <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-2"
-        >
+        <div className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
@@ -160,14 +111,10 @@ export default function SubscriptionPage() {
               Download Invoice
             </Button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Current Plan Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-900/30 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -218,15 +165,11 @@ export default function SubscriptionPage() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Usage Stats */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -243,13 +186,9 @@ export default function SubscriptionPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -266,13 +205,9 @@ export default function SubscriptionPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -287,13 +222,9 @@ export default function SubscriptionPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -308,15 +239,11 @@ export default function SubscriptionPage() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Available Plans */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Available Plans</CardTitle>
@@ -327,11 +254,8 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
                 {availablePlans.map((plan, index) => (
-                  <motion.div
+                  <div
                     key={plan.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
                     className={`relative p-6 rounded-2xl border-2 transition-all duration-300 ${
                       plan.current
                         ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20"
@@ -389,19 +313,15 @@ export default function SubscriptionPage() {
                         {plan.current ? "Current Plan" : "Upgrade to " + plan.name}
                       </Button>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Subscription History */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.9 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -415,7 +335,7 @@ export default function SubscriptionPage() {
               <SubscriptionHistory />
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

@@ -64,6 +64,11 @@ export default function LoginPage() {
 
     if (!validateForm()) {
       console.log("❌ Form validation failed")
+      toast({
+        title: "Validation Error",
+        description: "Please check your input and try again.",
+        variant: "destructive",
+      })
       return
     }
 

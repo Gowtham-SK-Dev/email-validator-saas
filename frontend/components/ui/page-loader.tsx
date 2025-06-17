@@ -1,144 +1,83 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 
 interface PageLoaderProps {
   isLoading: boolean
+  variant?: "default" | "minimal" | "dots" | "pulse"
+  message?: string
 }
 
-export function PageLoader({ isLoading }: PageLoaderProps) {
+export function PageLoader({ isLoading, variant = "default", message = "Loading..." }: PageLoaderProps) {
+  if (!isLoading) return null
+
   return (
-    <AnimatePresence>
-      {isLoading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm"
-        >
-          {/* Animated Background Circles */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div
-              animate={{
-                scale: [1, 1.2, 1],
-                x: [0, 100, 0],
-                y: [0, -50, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-              className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 dark:bg-blue-600/30 rounded-full blur-xl"
-            />
-            <motion.div
-              animate={{
-                scale: [1.2, 1, 1.2],
-                x: [0, -80, 0],
-                y: [0, 60, 0],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-                delay: 1,
-              }}
-              className="absolute -top-10 -right-20 w-32 h-32 bg-purple-500/20 dark:bg-purple-600/30 rounded-full blur-xl"
-            />
-            <motion.div
-              animate={{
-                scale: [1, 1.3, 1],
-                x: [0, 60, 0],
-                y: [0, -80, 0],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-                delay: 2,
-              }}
-              className="absolute -bottom-20 -left-10 w-36 h-36 bg-cyan-500/20 dark:bg-cyan-600/30 rounded-full blur-xl"
-            />
-          </div>
-
-          {/* Main Loader Content */}
-          <div className="relative z-10 flex flex-col items-center space-y-6">
-            {/* Spinning Logo/Icon */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{
-                duration: 2,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
-              }}
-              className="relative"
-            >
-              <div className="w-16 h-16 border-4 border-blue-500/30 dark:border-blue-400/40 rounded-full">
-                <div className="w-full h-full border-4 border-transparent border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin"></div>
-              </div>
-
-              {/* Inner spinning element */}
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "linear",
-                }}
-                className="absolute inset-2 w-12 h-12 border-2 border-purple-500/50 dark:border-purple-400/60 border-b-transparent rounded-full"
-              />
-            </motion.div>
-
-            {/* Pulsing Dots */}
-            <div className="flex space-x-2">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Number.POSITIVE_INFINITY,
-                    delay: i * 0.2,
-                    ease: "easeInOut",
-                  }}
-                  className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400 rounded-full"
-                />
-              ))}
-            </div>
-
-            {/* Loading Text */}
-            <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{
-                duration: 2,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "easeInOut",
-              }}
-              className="text-center"
-            >
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">Loading...</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Please wait while we prepare your page</p>
-            </motion.div>
-
-            {/* Progress Bar */}
-            <div className="w-64 h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-              <motion.div
-                animate={{ x: ["-100%", "100%"] }}
-                transition={{
-                  duration: 2,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "easeInOut",
-                }}
-                className="h-full w-1/3 bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-400 dark:to-purple-400 rounded-full"
-              />
-            </div>
-          </div>
-        </motion.div>
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-center",
+        "bg-background/80 backdrop-blur-sm",
+        "transition-all duration-300 ease-in-out",
       )}
-    </AnimatePresence>
+    >
+      <div className="flex flex-col items-center space-y-4">
+        {/* Loader Animation */}
+        {variant === "default" && <DefaultLoader />}
+        {variant === "minimal" && <MinimalLoader />}
+        {variant === "dots" && <DotsLoader />}
+        {variant === "pulse" && <PulseLoader />}
+
+        {/* Loading Message */}
+        <div className="text-center">
+          <p className="text-sm font-medium text-muted-foreground animate-pulse">{message}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DefaultLoader() {
+  return (
+    <div className="relative">
+      {/* Outer ring */}
+      <div className="w-12 h-12 rounded-full border-4 border-muted animate-spin">
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin"></div>
+      </div>
+
+      {/* Inner ring */}
+      <div className="absolute inset-2 w-8 h-8 rounded-full border-2 border-muted animate-spin-reverse">
+        <div className="absolute inset-0 rounded-full border-2 border-transparent border-b-primary/60 animate-spin-reverse"></div>
+      </div>
+    </div>
+  )
+}
+
+function MinimalLoader() {
+  return <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
+}
+
+function DotsLoader() {
+  return (
+    <div className="flex space-x-2">
+      {[0, 1, 2].map((i) => (
+        <div
+          key={i}
+          className={cn(
+            "w-3 h-3 bg-primary rounded-full animate-bounce",
+            i === 1 && "animation-delay-150",
+            i === 2 && "animation-delay-300",
+          )}
+        ></div>
+      ))}
+    </div>
+  )
+}
+
+function PulseLoader() {
+  return (
+    <div className="relative">
+      <div className="w-12 h-12 bg-primary/20 rounded-full animate-ping"></div>
+      <div className="absolute inset-0 w-12 h-12 bg-primary/40 rounded-full animate-pulse"></div>
+      <div className="absolute inset-2 w-8 h-8 bg-primary rounded-full"></div>
+    </div>
   )
 }

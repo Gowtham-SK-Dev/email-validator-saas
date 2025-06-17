@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -66,7 +65,20 @@ export default function RegisterPage() {
       return
     }
 
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setStep(2)
+    toast({
+      title: "Step 1 completed",
+      description: "Please complete your registration details.",
+    })
   }
 
   const handleSubmitStep2 = async (e: React.FormEvent) => {
@@ -82,15 +94,17 @@ export default function RegisterPage() {
 
       toast({
         title: "Registration successful!",
-        description: "Your account has been created.",
+        description: "Your account has been created. Redirecting to login...",
       })
 
       // Redirect to login page
-      router.push("/login")
+      setTimeout(() => {
+        router.push("/login")
+      }, 1500)
     } catch (error) {
       toast({
         title: "Registration failed",
-        description: "There was an error creating your account.",
+        description: "There was an error creating your account. Please try again.",
         variant: "destructive",
       })
     } finally {

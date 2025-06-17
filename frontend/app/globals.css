@@ -109,6 +109,10 @@
     animation: fadeIn 0.6s ease-out forwards;
   }
 
+  .animate-fade-out {
+    animation: fadeOut 0.3s ease-in forwards;
+  }
+
   .animate-slide-up {
     animation: slideUp 0.8s ease-out forwards;
   }
@@ -165,6 +169,33 @@
       radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
   }
 
+  /* Animation delays for bouncing dots */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  /* Reverse spin animation */
+  @keyframes spin-reverse {
+    from {
+      transform: rotate(360deg);
+    }
+    to {
+      transform: rotate(0deg);
+    }
+  }
+
+  .animate-spin-reverse {
+    animation: spin-reverse 1s linear infinite;
+  }
+
   /* Add this new animation for the shimmer effect */
   @keyframes shimmer {
     0% {
@@ -173,6 +204,82 @@
     100% {
       left: 100%;
     }
+  }
+
+  /* Enhanced loading animations */
+  @keyframes loading-bar {
+    0% {
+      width: 0%;
+      opacity: 1;
+    }
+    50% {
+      width: 70%;
+      opacity: 0.8;
+    }
+    100% {
+      width: 100%;
+      opacity: 0.6;
+    }
+  }
+
+  .loading-bar {
+    animation: loading-bar 2s ease-in-out infinite;
+  }
+
+  /* Smooth fade transitions */
+  .loader-fade-in {
+    animation: fadeInScale 0.4s ease-out forwards;
+  }
+
+  .loader-fade-out {
+    animation: fadeOutScale 0.3s ease-in forwards;
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  @keyframes fadeOutScale {
+    from {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+  }
+
+  /* Improved spinner animations */
+  @keyframes spin-smooth {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-smooth {
+    animation: spin-smooth 3s linear infinite;
+  }
+
+  /* Glowing effect */
+  .glow-effect {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(147, 51, 234, 0.2);
+  }
+
+  /* Mask for gradient ring */
+  .mask-ring {
+    mask: radial-gradient(circle at center, transparent 60%, black 65%, black 100%);
+    -webkit-mask: radial-gradient(circle at center, transparent 60%, black 65%, black 100%);
   }
 }
 
@@ -208,6 +315,17 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
   }
 }
 

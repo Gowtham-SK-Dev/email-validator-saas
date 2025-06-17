@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { motion } from "framer-motion"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,9 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { HelpCircle, MessageSquare, Phone, Mail, Clock, Search, Send, BookOpen, Video, FileText } from "lucide-react"
-import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
+// Pre-defined data to avoid re-computation
 const supportTickets = [
   {
     id: "TICK-001",
@@ -106,41 +104,31 @@ const supportChannels = [
   },
 ]
 
-export default function SupportPage() {
-  const { toast } = useToast()
-  const [ticketForm, setTicketForm] = useState({
-    subject: "",
-    category: "",
-    priority: "",
-    description: "",
-  })
-  const [searchQuery, setSearchQuery] = useState("")
+// Extracted components for better performance
+function SupportChannel({ channel }) {
+  return (
+    <div className="p-6 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200 cursor-pointer group">
+      <div className="space-y-4">
+        <div className={`p-3 rounded-lg ${channel.bgColor} ${channel.darkBgColor} w-fit`}>
+          <channel.icon className={`h-6 w-6 ${channel.color} ${channel.darkColor}`} />
+        </div>
+        <div>
+          <h4 className="font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {channel.name}
+          </h4>
+          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{channel.description}</p>
+          <div className="space-y-1 mt-3 text-xs text-slate-500 dark:text-slate-400">
+            <p>Available: {channel.availability}</p>
+            <p>Response: {channel.responseTime}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
-  const handleSubmitTicket = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!ticketForm.subject || !ticketForm.category || !ticketForm.description) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    toast({
-      title: "Support ticket created",
-      description: "Your ticket has been submitted. We'll get back to you soon!",
-    })
-
-    setTicketForm({
-      subject: "",
-      category: "",
-      priority: "",
-      description: "",
-    })
-  }
-
-  const getStatusBadge = (status: string) => {
+function SupportTicketItem({ ticket }) {
+  const getStatusBadge = (status) => {
     switch (status) {
       case "open":
         return (
@@ -169,7 +157,7 @@ export default function SupportPage() {
     }
   }
 
-  const getPriorityBadge = (priority: string) => {
+  const getPriorityBadge = (priority) => {
     switch (priority) {
       case "high":
         return (
@@ -198,6 +186,87 @@ export default function SupportPage() {
     }
   }
 
+  return (
+    <div className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200">
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h4 className="font-medium text-slate-900 dark:text-white truncate">{ticket.subject}</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-300">#{ticket.id}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {getStatusBadge(ticket.status)}
+            {getPriorityBadge(ticket.priority)}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Created: {ticket.created}
+          </span>
+          <span>Updated: {ticket.lastUpdate}</span>
+          <span>Category: {ticket.category}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FAQItem({ faq }) {
+  return (
+    <div className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200">
+      <div className="space-y-2">
+        <div className="flex items-start gap-3">
+          <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded">
+            <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-medium text-slate-900 dark:text-white">{faq.question}</h4>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{faq.answer}</p>
+            <Badge variant="outline" className="text-xs mt-2 dark:border-slate-700 dark:text-slate-300">
+              {faq.category}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SupportPage() {
+  const { toast } = useToast()
+  const [ticketForm, setTicketForm] = useState({
+    subject: "",
+    category: "",
+    priority: "",
+    description: "",
+  })
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSubmitTicket = (e) => {
+    e.preventDefault()
+    if (!ticketForm.subject || !ticketForm.category || !ticketForm.description) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    toast({
+      title: "Support ticket created",
+      description: "Your ticket has been submitted. We'll get back to you soon!",
+    })
+
+    setTicketForm({
+      subject: "",
+      category: "",
+      priority: "",
+      description: "",
+    })
+  }
+
   const filteredFAQ = faqItems.filter(
     (item) =>
       item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -206,57 +275,9 @@ export default function SupportPage() {
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Animated background circles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl"
-          animate={{
-            x: [0, 30, -10, 20, 0],
-            y: [0, -40, 10, -20, 0],
-            scale: [1, 1.1, 0.9, 1.05, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl"
-          animate={{
-            x: [0, -20, 10, -30, 0],
-            y: [0, 30, -20, 10, 0],
-            scale: [1, 0.9, 1.1, 0.95, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl"
-          animate={{
-            x: [0, 40, -30, 20, 0],
-            y: [0, -20, 40, -10, 0],
-            scale: [1, 1.05, 0.95, 1.1, 1],
-          }}
-          transition={{
-            duration: 35,
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "reverse",
-          }}
-        />
-      </div>
-
       <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="space-y-2"
-        >
+        <div className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
@@ -266,14 +287,10 @@ export default function SupportPage() {
               <p className="text-slate-600 dark:text-slate-300 mt-1">Get help and find answers to your questions.</p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Support Channels */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">Contact Support</CardTitle>
@@ -283,43 +300,17 @@ export default function SupportPage() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-6 md:grid-cols-3">
-                {supportChannels.map((channel, index) => (
-                  <motion.div
-                    key={channel.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                    className="p-6 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200 cursor-pointer group"
-                  >
-                    <div className="space-y-4">
-                      <div className={`p-3 rounded-lg ${channel.bgColor} ${channel.darkBgColor} w-fit`}>
-                        <channel.icon className={`h-6 w-6 ${channel.color} ${channel.darkColor}`} />
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {channel.name}
-                        </h4>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{channel.description}</p>
-                        <div className="space-y-1 mt-3 text-xs text-slate-500 dark:text-slate-400">
-                          <p>Available: {channel.availability}</p>
-                          <p>Response: {channel.responseTime}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                {supportChannels.map((channel) => (
+                  <SupportChannel key={channel.name} channel={channel} />
                 ))}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Create Support Ticket */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -426,14 +417,10 @@ export default function SupportPage() {
                 </form>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* My Support Tickets */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
+          <div>
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -445,48 +432,17 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {supportTickets.map((ticket, index) => (
-                    <motion.div
-                      key={ticket.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.7 + index * 0.05 }}
-                      className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-slate-900 dark:text-white truncate">{ticket.subject}</h4>
-                            <p className="text-sm text-slate-600 dark:text-slate-300">#{ticket.id}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(ticket.status)}
-                            {getPriorityBadge(ticket.priority)}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            Created: {ticket.created}
-                          </span>
-                          <span>Updated: {ticket.lastUpdate}</span>
-                          <span>Category: {ticket.category}</span>
-                        </div>
-                      </div>
-                    </motion.div>
+                  {supportTickets.map((ticket) => (
+                    <SupportTicketItem key={ticket.id} ticket={ticket} />
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* FAQ Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -512,40 +468,15 @@ export default function SupportPage() {
             <CardContent>
               <div className="space-y-4">
                 {filteredFAQ.map((faq, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.9 + index * 0.05 }}
-                    className="p-4 rounded-xl border border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 transition-colors duration-200"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-3">
-                        <div className="p-1 bg-blue-50 dark:bg-blue-900/30 rounded">
-                          <HelpCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-slate-900 dark:text-white">{faq.question}</h4>
-                          <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">{faq.answer}</p>
-                          <Badge variant="outline" className="text-xs mt-2 dark:border-slate-700 dark:text-slate-300">
-                            {faq.category}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                  <FAQItem key={index} faq={faq} />
                 ))}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
 
         {/* Help Resources */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1.0 }}
-        >
+        <div>
           <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:border-blue-900/30 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="text-center space-y-4">
@@ -577,7 +508,7 @@ export default function SupportPage() {
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
