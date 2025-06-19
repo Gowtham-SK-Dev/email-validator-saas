@@ -1,109 +1,136 @@
-import type { RowDataPacket, ResultSetHeader } from "mysql2/promise"
-import pool from "../config/database"
+import { DataTypes, Model, type Optional } from "sequelize"
+import sequelize from "../config/database"
+import { User } from "./user.model"
 
-interface Help {
+interface HelpAttributes {
   id: number
   user_id: number
   message: string
-  response: string | null
-  status: string
+  response?: string | null
+  status: "pending" | "in_progress" | "resolved" | "closed"
   created_at: Date
   updated_at: Date
 }
 
-interface NewHelp {
-  user_id: number
-  message: string
+interface HelpCreationAttributes
+  extends Optional<HelpAttributes, "id" | "created_at" | "updated_at" | "response" | "status"> {}
+
+export class Help extends Model<HelpAttributes, HelpCreationAttributes> implements HelpAttributes {
+  public id!: number
+  public user_id!: number
+  public message!: string
+  public response?: string | null
+  public status!: "pending" | "in_progress" | "resolved" | "closed"
+  public created_at!: Date
+  public updated_at!: Date
 }
 
-interface UpdateHelp {
-  response?: string
-  status?: string
-}
+Help.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
+    message: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    response: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("pending", "in_progress", "resolved", "closed"),
+      allowNull: false,
+      defaultValue: "pending",
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    tableName: "help",
+    timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    indexes: [{ fields: ["user_id"] }, { fields: ["status"] }, { fields: ["created_at"] }],
+  },
+)
 
-// Create help request
-export const createHelpRequest = async (help: NewHelp): Promise<number> => {
+// Service functions
+export const createHelpRequest = async (helpData: { user_id: number; message: string }): Promise<Help> => {
   try {
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO help (
-        user_id, message, status, created_at, updated_at
-      ) VALUES (?, ?, 'pending', NOW(), NOW())`,
-      [help.user_id, help.message],
-    )
-
-    return result.insertId
+    return await Help.create(helpData)
   } catch (error) {
     console.error("Error creating help request:", error)
     throw error
   }
 }
 
-// Get help requests by user ID
 export const getHelpRequestsByUserId = async (userId: number): Promise<Help[]> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM help WHERE user_id = ? ORDER BY created_at DESC", [
-      userId,
-    ])
-
-    return rows as Help[]
+    return await Help.findAll({
+      where: { user_id: userId },
+      order: [["created_at", "DESC"]],
+    })
   } catch (error) {
     console.error("Error getting help requests by user ID:", error)
     throw error
   }
 }
 
-// Get all help requests (for admin)
 export const getAllHelpRequests = async (page = 1, limit = 10): Promise<{ helpRequests: any[]; total: number }> => {
   try {
     const offset = (page - 1) * limit
 
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-        h.*, 
-        u.username, 
-        u.email
-      FROM help h
-      JOIN users u ON h.user_id = u.id
-      ORDER BY h.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [limit, offset],
-    )
+    const { count, rows } = await Help.findAndCountAll({
+      include: [{ model: User, as: "user", attributes: ["username", "email"] }],
+      order: [["created_at", "DESC"]],
+      limit,
+      offset,
+    })
 
-    const [countResult] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) as total FROM help")
-    const total = (countResult[0]?.["total"] as number) || 0
-
-    return { helpRequests: rows, total }
+    return { helpRequests: rows, total: count }
   } catch (error) {
     console.error("Error getting all help requests:", error)
     throw error
   }
 }
 
-// Update help request
-export const updateHelpRequest = async (id: number, updateData: UpdateHelp): Promise<void> => {
+export const updateHelpRequest = async (
+  id: number,
+  updateData: { response?: string; status?: string },
+): Promise<void> => {
   try {
-    const keys = Object.keys(updateData) as Array<keyof UpdateHelp>
-
-    if (keys.length === 0) {
-      return
-    }
-
-    const setClause = keys.map((key) => `${key} = ?`).join(", ")
-    const values = keys.map((key) => updateData[key])
-
-    await pool.query(`UPDATE help SET ${setClause}, updated_at = NOW() WHERE id = ?`, [...values, id])
+    await Help.update(updateData, { where: { id } })
   } catch (error) {
     console.error("Error updating help request:", error)
     throw error
   }
 }
 
-// Get help request by ID
 export const getHelpRequestById = async (id: number): Promise<Help | null> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM help WHERE id = ?", [id])
-
-    return rows.length ? (rows[0] as Help) : null
+    return await Help.findByPk(id, {
+      include: [{ model: User, as: "user" }],
+    })
   } catch (error) {
     console.error("Error getting help request by ID:", error)
     throw error

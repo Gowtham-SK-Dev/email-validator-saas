@@ -1,141 +1,193 @@
-import type { RowDataPacket, ResultSetHeader } from "mysql2/promise"
-import pool from "../config/database"
+import { DataTypes, Model, type Optional, Op } from "sequelize"
+import sequelize from "../config/database"
+import { User } from "./user.model"
+import { PaymentType } from "./payment-type.model"
+import { Subscription } from "./subscription.model"
+import { SubscriptionType } from "./subscription-type.model"
 
-interface Payment {
+interface PaymentAttributes {
   id: number
   user_id: number
   amount: number
   payment_type_id: number
   subscription_id: number
   transaction_id: string
-  status: string
+  status: "pending" | "completed" | "failed" | "refunded"
   created_at: Date
   updated_at: Date
 }
 
-interface NewPayment {
-  user_id: number
-  amount: number
-  payment_type_id: number
-  subscription_id: number
-  transaction_id: string
-  status: string
+interface PaymentCreationAttributes
+  extends Optional<PaymentAttributes, "id" | "created_at" | "updated_at" | "status"> {}
+
+export class Payment extends Model<PaymentAttributes, PaymentCreationAttributes> implements PaymentAttributes {
+  public id!: number
+  public user_id!: number
+  public amount!: number
+  public payment_type_id!: number
+  public subscription_id!: number
+  public transaction_id!: string
+  public status!: "pending" | "completed" | "failed" | "refunded"
+  public created_at!: Date
+  public updated_at!: Date
 }
 
-// Create payment
-export const createPayment = async (payment: NewPayment): Promise<number> => {
-  try {
-    const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO payments (
-        user_id, amount, payment_type_id, subscription_id,
-        transaction_id, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [
-        payment.user_id,
-        payment.amount,
-        payment.payment_type_id,
-        payment.subscription_id,
-        payment.transaction_id,
-        payment.status,
-      ],
-    )
+Payment.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    payment_type_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "payment_types",
+        key: "id",
+      },
+    },
+    subscription_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "subscriptions",
+        key: "id",
+      },
+    },
+    transaction_id: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+    },
+    status: {
+      type: DataTypes.ENUM("pending", "completed", "failed", "refunded"),
+      allowNull: false,
+      defaultValue: "pending",
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    tableName: "payments",
+    timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+    indexes: [
+      { fields: ["user_id"] },
+      { fields: ["transaction_id"] },
+      { fields: ["status"] },
+      { fields: ["created_at"] },
+    ],
+  },
+)
 
-    return result.insertId
+// Service functions
+export const createPayment = async (paymentData: PaymentCreationAttributes): Promise<Payment> => {
+  try {
+    return await Payment.create(paymentData)
   } catch (error) {
     console.error("Error creating payment:", error)
     throw error
   }
 }
 
-// Get payment by ID
 export const getPaymentById = async (id: number): Promise<Payment | null> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM payments WHERE id = ?", [id])
-
-    return rows.length ? (rows[0] as Payment) : null
+    return await Payment.findByPk(id, {
+      include: [
+        { model: User, as: "user" },
+        { model: PaymentType, as: "paymentType" },
+        { model: Subscription, as: "subscription", include: [{ model: SubscriptionType, as: "subscriptionType" }] },
+      ],
+    })
   } catch (error) {
     console.error("Error getting payment by ID:", error)
     throw error
   }
 }
 
-// Get all payments (for admin)
-export const getAllPayments = async (page = 1, limit = 10): Promise<{ payments: any[]; total: number }> => {
+export const getAllPayments = async (page = 1, limit = 10): Promise<{ payments: Payment[]; total: number }> => {
   try {
     const offset = (page - 1) * limit
 
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-        p.*, 
-        u.username, 
-        u.email,
-        pt.payment_type_name,
-        st.plan_name
-      FROM payments p
-      JOIN users u ON p.user_id = u.id
-      JOIN payment_types pt ON p.payment_type_id = pt.id
-      JOIN subscriptions s ON p.subscription_id = s.id
-      JOIN subscription_types st ON s.subscription_type_id = st.id
-      ORDER BY p.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [limit, offset],
-    )
+    const { count, rows } = await Payment.findAndCountAll({
+      include: [
+        { model: User, as: "user" },
+        { model: PaymentType, as: "paymentType" },
+        { model: Subscription, as: "subscription", include: [{ model: SubscriptionType, as: "subscriptionType" }] },
+      ],
+      order: [["created_at", "DESC"]],
+      limit,
+      offset,
+    })
 
-    const [countResult] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) as total FROM payments")
-    const total = (countResult[0]?.["total"] as number) || 0
-
-    return { payments: rows, total }
+    return { payments: rows, total: count }
   } catch (error) {
     console.error("Error getting all payments:", error)
     throw error
   }
 }
 
-// Get payments by date range
 export const getPaymentsByDateRange = async (
   startDate: string,
   endDate: string,
   page = 1,
   limit = 10,
-): Promise<{ payments: any[]; total: number }> => {
+): Promise<{ payments: Payment[]; total: number }> => {
   try {
     const offset = (page - 1) * limit
 
-    const [rows] = await pool.query<RowDataPacket[]>(
-      `SELECT 
-        p.*, 
-        u.username, 
-        u.email,
-        pt.payment_type_name,
-        st.plan_name
-      FROM payments p
-      JOIN users u ON p.user_id = u.id
-      JOIN payment_types pt ON p.payment_type_id = pt.id
-      JOIN subscriptions s ON p.subscription_id = s.id
-      JOIN subscription_types st ON s.subscription_type_id = st.id
-      WHERE DATE(p.created_at) BETWEEN ? AND ?
-      ORDER BY p.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [startDate, endDate, limit, offset],
-    )
+    const { count, rows } = await Payment.findAndCountAll({
+      where: {
+        created_at: {
+          [Op.between]: [new Date(startDate), new Date(endDate)],
+        },
+      },
+      include: [
+        { model: User, as: "user" },
+        { model: PaymentType, as: "paymentType" },
+        { model: Subscription, as: "subscription", include: [{ model: SubscriptionType, as: "subscriptionType" }] },
+      ],
+      order: [["created_at", "DESC"]],
+      limit,
+      offset,
+    })
 
-    const [countResult] = await pool.query<RowDataPacket[]>(
-      "SELECT COUNT(*) as total FROM payments WHERE DATE(created_at) BETWEEN ? AND ?",
-      [startDate, endDate],
-    )
-    const total = (countResult[0]?.["total"] as number) || 0
-
-    return { payments: rows, total }
+    return { payments: rows, total: count }
   } catch (error) {
     console.error("Error getting payments by date range:", error)
     throw error
   }
 }
 
-// Update payment status
-export const updatePaymentStatus = async (id: number, status: string): Promise<void> => {
+export const updatePaymentStatus = async (
+  id: number,
+  status: "pending" | "completed" | "failed" | "refunded",
+): Promise<void> => {
   try {
-    await pool.query("UPDATE payments SET status = ?, updated_at = NOW() WHERE id = ?", [status, id])
+    await Payment.update({ status }, { where: { id } })
   } catch (error) {
     console.error("Error updating payment status:", error)
     throw error

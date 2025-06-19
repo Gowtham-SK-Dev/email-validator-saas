@@ -1,43 +1,38 @@
-import mysql from "mysql2/promise"
+import { Sequelize } from "sequelize"
 import dotenv from "dotenv"
 
 dotenv.config()
 
 // Database configuration
-const dbConfig = {
+const sequelize = new Sequelize({
   host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
+  port: Number(process.env.DB_PORT) || 3306,
+  database: process.env.DB_NAME || "vpstbteck_stagingcargo",
+  username: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "email_verification_saas",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  charset: "utf8mb4",
-  port: 3306, // Default MySQL port
-  ssl: {
-    rejectUnauthorized: false,
+  dialect: "mysql",
+  dialectOptions: {
+    charset: "utf8mb4",
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
-}
-
-console.log("Connecting to database with config:", {
-  host: dbConfig.host,
-  user: dbConfig.user,
-  database: dbConfig.database,
-  port: dbConfig.port,
+  pool: {
+    max: 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
+  logging: process.env.NODE_ENV === "development" ? console.log : false,
 })
-
-// Create connection pool
-const pool = mysql.createPool(dbConfig)
 
 // Test database connection
 const testConnection = async () => {
   try {
-    const connection = await pool.getConnection()
-    console.log("✅ Database connected successfully")
-    connection.release()
+    await sequelize.authenticate()
+    console.log("✅ Database connected successfully with Sequelize")
   } catch (error) {
     console.error("❌ Database connection failed:", error)
-    // Don't exit process in development to allow fixing connection issues
     if (process.env.NODE_ENV === "production") {
       process.exit(1)
     }
@@ -47,4 +42,4 @@ const testConnection = async () => {
 // Initialize database connection
 testConnection()
 
-export default pool
+export default sequelize

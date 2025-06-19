@@ -1,59 +1,91 @@
-import type { RowDataPacket, ResultSetHeader } from "mysql2/promise"
-import pool from "../config/database"
+import { DataTypes, Model, type Optional } from "sequelize"
+import sequelize from "../config/database"
 
-interface Role {
+interface RoleAttributes {
   id: number
   role_name: string
-  description: string
+  description?: string
   created_at: Date
   updated_at: Date
 }
 
-// Get role by name
+interface RoleCreationAttributes extends Optional<RoleAttributes, "id" | "created_at" | "updated_at" | "description"> {}
+
+export class Role extends Model<RoleAttributes, RoleCreationAttributes> implements RoleAttributes {
+  public id!: number
+  public role_name!: string
+  public description?: string
+  public created_at!: Date
+  public updated_at!: Date
+}
+
+Role.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    role_name: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      unique: true,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+  },
+  {
+    sequelize,
+    tableName: "roles",
+    timestamps: true,
+    createdAt: "created_at",
+    updatedAt: "updated_at",
+  },
+)
+
+// Service functions
 export const getRoleByName = async (roleName: string): Promise<Role | null> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM roles WHERE role_name = ?", [roleName])
-
-    return rows.length ? (rows[0] as Role) : null
+    return await Role.findOne({ where: { role_name: roleName } })
   } catch (error) {
     console.error("Error getting role by name:", error)
     throw error
   }
 }
 
-// Get role by ID
 export const getRoleById = async (id: number): Promise<Role | null> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM roles WHERE id = ?", [id])
-
-    return rows.length ? (rows[0] as Role) : null
+    return await Role.findByPk(id)
   } catch (error) {
     console.error("Error getting role by ID:", error)
     throw error
   }
 }
 
-// Get all roles
 export const getAllRoles = async (): Promise<Role[]> => {
   try {
-    const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM roles ORDER BY role_name ASC")
-
-    return rows as Role[]
+    return await Role.findAll({ order: [["role_name", "ASC"]] })
   } catch (error) {
     console.error("Error getting all roles:", error)
     throw error
   }
 }
 
-// Create role
-export const createRole = async (roleName: string, description: string): Promise<number> => {
+export const createRole = async (roleName: string, description?: string): Promise<Role> => {
   try {
-    const [result] = await pool.query<ResultSetHeader>(
-      "INSERT INTO roles (role_name, description, created_at, updated_at) VALUES (?, ?, NOW(), NOW())",
-      [roleName, description]
-    )
-
-    return result.insertId
+    return await Role.create({ role_name: roleName, description })
   } catch (error) {
     console.error("Error creating role:", error)
     throw error

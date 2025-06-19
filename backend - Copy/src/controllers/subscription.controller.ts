@@ -159,7 +159,7 @@ export const verifySubscriptionPayment = async (req: Request, res: Response): Pr
       subscription_id: subscriptionId,
     })
   } catch (error) {
-    console.error("Verify subscription payment error:", error) 
+    console.error("Verify subscription payment error:", error)
     res.status(500).json({ message: "Internal server error" })
   }
 }
