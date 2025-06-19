@@ -91,7 +91,7 @@ export default function LoginPage() {
       setTimeout(() => {
         console.log("🔄 Redirecting to dashboard...")
         router.push("/dashboard")
-      }, 1000)
+      }, 500)
     } catch (error: any) {
       console.error("❌ Login error:", error)
 

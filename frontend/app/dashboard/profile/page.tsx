@@ -51,6 +51,7 @@ const ProfilePage = () => {
     initials: `${formData.firstName[0]}${formData.lastName[0]}`,
     plan: "Pro Plan",
     apiKey: "sk-proj-abc123...xyz789",
+    apiKey: "sk-proj-abc123...xyz789",
     joinDate: "March 2024",
     location: formData.location,
   }

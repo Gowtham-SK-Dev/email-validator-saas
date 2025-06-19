@@ -16,7 +16,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { useAuth } from "@/lib/hooks/use-auth"
-import { useNavigation } from "@/components/navigation/simple-navigation-provider"
+import { useNavigation } from "@/components/navigation/unified-navigation-provider"
 import { toast } from "sonner"
 import { useState, useTransition } from "react"
 import Link from "next/link"
@@ -25,21 +25,20 @@ import { useTheme } from "next-themes"
 export function Navbar() {
   const router = useRouter()
   const { user, logout } = useAuth()
-  const { startLoading } = useNavigation()
+  const { startLoading, isLoading } = useNavigation()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const { theme, setTheme } = useTheme()
   const [isPending, startTransition] = useTransition()
 
   const handleSignOut = async () => {
-    if (isLoggingOut) return
+    if (isLoggingOut || isLoading) return
 
     setIsLoggingOut(true)
-    startLoading() // Start loading immediately
+    startLoading("navbar-logout")
 
     try {
       await logout()
       toast.success("Logged out successfully")
-      // Use startTransition for immediate navigation
       startTransition(() => {
         router.push("/login")
       })
@@ -52,8 +51,12 @@ export function Navbar() {
   }
 
   const handleNavigation = (path: string) => {
-    startLoading() // Start loading immediately
-    // Use startTransition for immediate navigation
+    if (isLoading) {
+      console.log("Navigation already in progress, skipping...")
+      return
+    }
+
+    startLoading("navbar-navigation")
     startTransition(() => {
       router.push(path)
     })
@@ -158,7 +161,7 @@ export function Navbar() {
               <DropdownMenuItem
                 onClick={() => handleNavigation("/dashboard/profile")}
                 className="font-medium"
-                disabled={isPending}
+                disabled={isPending || isLoading}
               >
                 <User className="h-4 w-4 mr-2" />
                 Profile
@@ -166,7 +169,7 @@ export function Navbar() {
               <DropdownMenuItem
                 onClick={() => handleNavigation("/dashboard/settings")}
                 className="font-medium"
-                disabled={isPending}
+                disabled={isPending || isLoading}
               >
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
@@ -174,7 +177,7 @@ export function Navbar() {
               <DropdownMenuSeparator className="dark:bg-slate-800" />
               <DropdownMenuItem
                 onClick={handleSignOut}
-                disabled={isLoggingOut || isPending}
+                disabled={isLoggingOut || isPending || isLoading}
                 className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-300 font-medium"
               >
                 <LogOut className="h-4 w-4 mr-2" />

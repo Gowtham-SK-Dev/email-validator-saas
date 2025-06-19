@@ -1,83 +1,86 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface PageLoaderProps {
   isLoading: boolean
-  variant?: "default" | "minimal" | "dots" | "pulse"
+  variant?: "default" | "minimal" | "modern"
   message?: string
 }
 
 export function PageLoader({ isLoading, variant = "default", message = "Loading..." }: PageLoaderProps) {
-  if (!isLoading) return null
+  const [show, setShow] = useState(isLoading) // Start with isLoading state
+  const [animationClass, setAnimationClass] = useState("")
+
+  useEffect(() => {
+    if (isLoading) {
+      setShow(true)
+      setAnimationClass("animate-in fade-in duration-200")
+    } else {
+      setAnimationClass("animate-out fade-out duration-300")
+      const timer = setTimeout(() => {
+        setShow(false)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
+
+  // Always show if loading, even on initial render
+  if (!show && !isLoading) return null
 
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center",
-        "bg-background/80 backdrop-blur-sm",
+        "fixed inset-0 z-[9999] flex items-center justify-center",
+        "bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm",
         "transition-all duration-300 ease-in-out",
+        animationClass,
       )}
     >
-      <div className="flex flex-col items-center space-y-4">
-        {/* Loader Animation */}
-        {variant === "default" && <DefaultLoader />}
-        {variant === "minimal" && <MinimalLoader />}
-        {variant === "dots" && <DotsLoader />}
-        {variant === "pulse" && <PulseLoader />}
+      <div className="flex flex-col items-center space-y-4 p-8">
+        {variant === "modern" && <ModernSpinner />}
+        {variant === "minimal" && <MinimalSpinner />}
+        {variant === "default" && <DefaultSpinner />}
 
-        {/* Loading Message */}
-        <div className="text-center">
-          <p className="text-sm font-medium text-muted-foreground animate-pulse">{message}</p>
+        <div className="text-center space-y-2">
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{message}</p>
+          <div className="flex space-x-1 justify-center">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+          </div>
         </div>
       </div>
     </div>
   )
 }
 
-function DefaultLoader() {
+function DefaultSpinner() {
   return (
-    <div className="relative">
-      {/* Outer ring */}
-      <div className="w-12 h-12 rounded-full border-4 border-muted animate-spin">
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin"></div>
-      </div>
-
-      {/* Inner ring */}
-      <div className="absolute inset-2 w-8 h-8 rounded-full border-2 border-muted animate-spin-reverse">
-        <div className="absolute inset-0 rounded-full border-2 border-transparent border-b-primary/60 animate-spin-reverse"></div>
-      </div>
+    <div className="relative w-12 h-12">
+      <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-700" />
+      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin" />
     </div>
   )
 }
 
-function MinimalLoader() {
-  return <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
-}
-
-function DotsLoader() {
+function ModernSpinner() {
   return (
-    <div className="flex space-x-2">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className={cn(
-            "w-3 h-3 bg-primary rounded-full animate-bounce",
-            i === 1 && "animation-delay-150",
-            i === 2 && "animation-delay-300",
-          )}
-        ></div>
-      ))}
+    <div className="relative w-16 h-16">
+      <div className="absolute inset-0 rounded-full border-2 border-slate-200 dark:border-slate-700" />
+      <div
+        className="absolute inset-2 rounded-full border-2 border-slate-300 dark:border-slate-600 animate-spin"
+        style={{ animationDirection: "reverse" }}
+      />
+      <div className="absolute inset-4 rounded-full border-2 border-blue-500 animate-spin" />
+      <div className="absolute inset-6 rounded-full bg-blue-500 animate-pulse" />
     </div>
   )
 }
 
-function PulseLoader() {
+function MinimalSpinner() {
   return (
-    <div className="relative">
-      <div className="w-12 h-12 bg-primary/20 rounded-full animate-ping"></div>
-      <div className="absolute inset-0 w-12 h-12 bg-primary/40 rounded-full animate-pulse"></div>
-      <div className="absolute inset-2 w-8 h-8 bg-primary rounded-full"></div>
-    </div>
+    <div className="w-8 h-8 border-2 border-slate-300 dark:border-slate-600 border-t-blue-500 rounded-full animate-spin" />
   )
 }

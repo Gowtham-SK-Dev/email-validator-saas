@@ -1,75 +1,72 @@
 "use client"
 
+import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { useNavigation } from "@/components/navigation/perfect-navigation-provider"
+import { useNavigation } from "@/components/navigation/unified-navigation-provider"
 import { useRouter } from "next/navigation"
-import { BarChart3, CreditCard, HelpCircle, Home, Key, Settings, User, Zap, FileText, ChevronRight } from "lucide-react"
-import Link from "next/link"
+import {
+  BarChart3,
+  CreditCard,
+  HelpCircle,
+  Home,
+  Key,
+  Settings,
+  User,
+  Zap,
+  FileText,
+  ChevronRight,
+  Activity,
+} from "lucide-react"
 import { useState, useEffect } from "react"
 
-const routes = [
+const sidebarItems = [
   {
-    label: "Dashboard",
-    icon: Home,
+    title: "Dashboard",
     href: "/dashboard",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    icon: Home,
   },
   {
-    label: "API Keys",
-    icon: Key,
+    title: "API Keys",
     href: "/dashboard/api-keys",
-    color: "text-purple-600",
-    bgColor: "bg-purple-50",
+    icon: Key,
   },
   {
-    label: "Usage Stats",
-    icon: BarChart3,
+    title: "Usage",
     href: "/dashboard/usage",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50",
+    icon: Activity,
   },
   {
-    label: "Subscription",
-    icon: CreditCard,
-    href: "/dashboard/subscription",
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
-    badge: "Pro",
-  },
-  {
-    label: "Reports",
-    icon: FileText,
+    title: "Reports",
     href: "/dashboard/reports",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-50",
+    icon: BarChart3,
   },
   {
-    label: "Support",
-    icon: HelpCircle,
-    href: "/dashboard/support",
-    color: "text-rose-600",
-    bgColor: "bg-rose-50",
+    title: "Payment",
+    href: "/dashboard/payment",
+    icon: CreditCard,
   },
-]
-
-const bottomRoutes = [
   {
-    label: "Profile",
-    icon: User,
+    title: "Subscription",
+    href: "/dashboard/subscription",
+    icon: FileText,
+  },
+  {
+    title: "Profile",
     href: "/dashboard/profile",
-    color: "text-slate-600",
-    bgColor: "bg-slate-50",
+    icon: User,
   },
   {
-    label: "Settings",
-    icon: Settings,
+    title: "Settings",
     href: "/dashboard/settings",
-    color: "text-slate-600",
-    bgColor: "bg-slate-50",
+    icon: Settings,
+  },
+  {
+    title: "Support",
+    href: "/dashboard/support",
+    icon: HelpCircle,
   },
 ]
 
@@ -91,13 +88,19 @@ export function Sidebar() {
       return
     }
 
-    console.log(`🎯 Menu clicked: ${label} (${pathname} → ${href})`)
+    // Don't navigate if already loading
+    if (isLoading) {
+      console.log(`Navigation already in progress, skipping ${label}`)
+      return
+    }
+
+    console.log(`🎯 Sidebar menu clicked: ${label} (${pathname} → ${href})`)
 
     // Set visual feedback immediately
     setClickedRoute(href)
 
-    // Start loader IMMEDIATELY when menu is clicked
-    startLoading(`sidebar-${label.toLowerCase()}`)
+    // Start loader with specific source
+    startLoading(`sidebar-${label.toLowerCase().replace(/\s+/g, "-")}`)
 
     // Navigate immediately
     router.push(href)
@@ -124,17 +127,20 @@ export function Sidebar() {
         </div>
         <div className="flex-1 px-4 py-6">
           <div className="space-y-2">
-            {[...routes, ...bottomRoutes].map((route) => (
-              <div
-                key={route.href}
-                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400"
-              >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800">
-                  <div className="h-4 w-4 bg-slate-300 dark:bg-slate-600 rounded-sm" />
+            {[...sidebarItems].map((route) => {
+              const Icon = route.icon
+              return (
+                <div
+                  key={route.href}
+                  className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <span className="flex-1">{route.title}</span>
                 </div>
-                <span className="flex-1">{route.label}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
@@ -169,7 +175,7 @@ export function Sidebar() {
       {/* Navigation */}
       <div className="flex-1 px-4 py-6 relative z-10">
         <nav className="space-y-2">
-          {routes.map((route, index) => {
+          {sidebarItems.map((route, index) => {
             const isActive = pathname === route.href
             const isClicked = clickedRoute === route.href
             const IconComponent = route.icon
@@ -182,19 +188,19 @@ export function Sidebar() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <button
-                  onClick={() => handleNavigation(route.href, route.label)}
-                  disabled={isActive} // Only disable if already on this page
+                  onClick={() => handleNavigation(route.href, route.title)}
+                  disabled={isActive || isLoading} // Disable if active or loading
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full relative",
                     isActive
                       ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 shadow-lg dark:from-blue-900/30 dark:to-purple-900/30 dark:text-blue-300 cursor-default"
-                      : isClicked
+                      : isClicked || isLoading
                         ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-600 dark:from-blue-800/40 dark:to-purple-800/40 dark:text-blue-400 scale-95"
                         : "text-slate-600 hover:bg-gradient-to-r hover:from-slate-50 hover:to-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:from-slate-800/60 dark:hover:to-slate-700/60 dark:hover:text-slate-200 cursor-pointer",
                   )}
                 >
                   {/* Loading pulse effect for clicked item */}
-                  {isClicked && (
+                  {(isClicked || (isLoading && !isActive)) && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-pulse" />
                   )}
 
@@ -202,8 +208,8 @@ export function Sidebar() {
                     className={cn(
                       "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 shadow-sm relative z-10",
                       isActive
-                        ? route.bgColor + " dark:bg-blue-900/40 shadow-md"
-                        : isClicked
+                        ? "bg-blue-50 dark:bg-blue-900/40 shadow-md"
+                        : isClicked || (isLoading && !isActive)
                           ? "bg-blue-100 dark:bg-blue-900/30"
                           : "group-hover:bg-slate-100 dark:group-hover:bg-slate-800",
                     )}
@@ -212,14 +218,14 @@ export function Sidebar() {
                       className={cn(
                         "h-4 w-4 transition-colors duration-200",
                         isActive
-                          ? route.color + " dark:text-blue-300"
-                          : isClicked
+                          ? "text-blue-600 dark:text-blue-300"
+                          : isClicked || (isLoading && !isActive)
                             ? "text-blue-600 dark:text-blue-400"
                             : "text-slate-500 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-300",
                       )}
                     />
                   </div>
-                  <span className="flex-1 text-left relative z-10">{route.label}</span>
+                  <span className="flex-1 text-left relative z-10">{route.title}</span>
                   {route.badge && (
                     <Badge
                       variant="secondary"
@@ -243,7 +249,7 @@ export function Sidebar() {
       {/* Bottom Navigation */}
       <div className="p-4 border-t border-slate-200/60 dark:border-slate-800/60 relative z-10">
         <nav className="space-y-2">
-          {bottomRoutes.map((route, index) => {
+          {sidebarItems.slice(6).map((route, index) => {
             const isActive = pathname === route.href
             const isClicked = clickedRoute === route.href
             const IconComponent = route.icon
@@ -253,29 +259,31 @@ export function Sidebar() {
                 key={route.href}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: (routes.length + index) * 0.05 }}
+                transition={{ duration: 0.3, delay: (sidebarItems.length + index) * 0.05 }}
               >
                 <button
-                  onClick={() => handleNavigation(route.href, route.label)}
-                  disabled={isActive}
+                  onClick={() => handleNavigation(route.href, route.title)}
+                  disabled={isActive || isLoading}
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full relative",
                     isActive
                       ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100 shadow-md cursor-default"
-                      : isClicked
+                      : isClicked || (isLoading && !isActive)
                         ? "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200 scale-95"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200 cursor-pointer",
                   )}
                 >
                   {/* Loading pulse effect for clicked item */}
-                  {isClicked && <div className="absolute inset-0 rounded-xl bg-slate-500/10 animate-pulse" />}
+                  {(isClicked || (isLoading && !isActive)) && (
+                    <div className="absolute inset-0 rounded-xl bg-slate-500/10 animate-pulse" />
+                  )}
 
                   <div
                     className={cn(
                       "flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 relative z-10",
                       isActive
                         ? "bg-slate-200 dark:bg-slate-700 shadow-sm"
-                        : isClicked
+                        : isClicked || (isLoading && !isActive)
                           ? "bg-slate-300 dark:bg-slate-600"
                           : "group-hover:bg-slate-100 dark:group-hover:bg-slate-800",
                     )}
@@ -285,13 +293,13 @@ export function Sidebar() {
                         "h-4 w-4 transition-colors duration-200",
                         isActive
                           ? "text-slate-600 dark:text-slate-300"
-                          : isClicked
+                          : isClicked || (isLoading && !isActive)
                             ? "text-slate-700 dark:text-slate-300"
                             : "text-slate-500 dark:text-slate-400",
                       )}
                     />
                   </div>
-                  <span className="flex-1 text-left relative z-10">{route.label}</span>
+                  <span className="flex-1 text-left relative z-10">{route.title}</span>
                   {isActive && (
                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.2 }}>
                       <ChevronRight className="h-4 w-4 text-slate-600 dark:text-slate-400 relative z-10" />
