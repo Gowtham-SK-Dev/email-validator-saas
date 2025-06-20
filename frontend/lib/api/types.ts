@@ -74,6 +74,26 @@ export interface UserProfile {
   website?: string
 }
 
+// Profile API Types (matching your API response)
+export interface ApiUserProfile {
+  id: number
+  username: string
+  mobile_number: string
+  email: string
+  api_key: string
+  balance_click_count: number
+  is_active: boolean
+  role_id: number
+  created_at: string
+  updated_at: string
+  role: {
+    id: number
+    role_name: string
+    created_at: string
+    updated_at: string
+  }
+}
+
 // Dashboard Types
 export interface DashboardStats {
   totalEmails: number

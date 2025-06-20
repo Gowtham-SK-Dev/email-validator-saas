@@ -1,14 +1,16 @@
 "use client"
 
 import type React from "react"
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Shield, Key, Bell, Save, Edit3, Download, Share2 } from "lucide-react"
-import { useState } from "react"
+import { Shield, Key, Bell, Save, Edit3, Download, Share2, Loader2, AlertCircle } from "lucide-react"
+import { ProfileService, type UserProfile } from "@/lib/api/profile"
+import { toast } from "sonner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Lazy load heavy components
 const MotionDiv = lazy(() => import("framer-motion").then((mod) => ({ default: mod.motion.div })))
@@ -24,41 +26,155 @@ const ComponentLoader = () => (
 
 const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+
   const [formData, setFormData] = useState({
-    firstName: "Gowtham",
-    lastName: "Sk",
-    email: "gowtham@example.com",
-    phone: "+91 9876543210",
-    company: "Tech Solutions Inc.",
-    location: "Bangalore, India",
-    bio: "Full-stack developer with 5+ years of experience in building scalable web applications.",
+    username: "",
+    email: "",
+    mobile_number: "",
+    // Additional fields for display
+    firstName: "",
+    lastName: "",
+    company: "",
+    location: "",
+    bio: "",
   })
+
+  // Fetch profile data on component mount
+  useEffect(() => {
+    fetchProfile()
+  }, [])
+
+  const fetchProfile = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const response = await ProfileService.getProfile()
+
+      if (response.success && response.data) {
+        setProfile(response.data)
+
+        // Split username into first and last name if possible
+        const nameParts = response.data.username.split(" ")
+        const firstName = nameParts[0] || response.data.username
+        const lastName = nameParts.slice(1).join(" ") || ""
+
+        setFormData({
+          username: response.data.username,
+          email: response.data.email,
+          mobile_number: response.data.mobile_number,
+          firstName,
+          lastName,
+          company: "Tech Solutions Inc.", // Default values
+          location: "Bangalore, India",
+          bio: `${response.data.role.role_name} with API access. Account created ${new Date(response.data.created_at).toLocaleDateString()}.`,
+        })
+      } else {
+        setError(response.error || "Failed to load profile")
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSave = () => {
-    setIsEditing(false)
-    console.log("Saving profile data:", formData)
+  const handleSave = async () => {
+    setIsSaving(true)
+    setError(null)
+
+    try {
+      // Combine first and last name for username
+      const username = `${formData.firstName} ${formData.lastName}`.trim()
+
+      const updateData = {
+        username: username || formData.username,
+        email: formData.email,
+        mobile_number: formData.mobile_number,
+      }
+
+      const response = await ProfileService.updateProfile(updateData)
+
+      if (response.success) {
+        toast.success("Profile updated successfully!")
+        setIsEditing(false)
+        // Refresh profile data
+        await fetchProfile()
+      } else {
+        setError(response.error || "Failed to update profile")
+        toast.error(response.error || "Failed to update profile")
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || "An unexpected error occurred"
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // User data for the ticket card
-  const userData = {
-    name: `${formData.firstName} ${formData.lastName}`,
-    email: formData.email,
-    initials: `${formData.firstName[0]}${formData.lastName[0]}`,
-    plan: "Pro Plan",
-    apiKey: "sk-proj-abc123...xyz789",
-    apiKey: "sk-proj-abc123...xyz789",
-    joinDate: "March 2024",
-    location: formData.location,
+  const userData = profile
+    ? {
+        name: formData.username || profile.username,
+        email: profile.email,
+        initials: profile.username
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2),
+        plan: profile.role.role_name === "admin" ? "Admin Plan" : "Pro Plan",
+        apiKey: profile.api_key,
+        joinDate: new Date(profile.created_at).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+        }),
+        location: formData.location,
+        balance: profile.balance_click_count,
+        isActive: profile.is_active,
+      }
+    : null
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          <span className="text-lg text-slate-600 dark:text-slate-300">Loading profile...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error && !profile) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={fetchProfile} className="ml-4">
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    )
   }
 
   return (
     <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      {/* Static background circles - no animation for better performance */}
+      {/* Static background circles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl" />
         <div className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl" />
@@ -81,16 +197,18 @@ const ProfilePage = () => {
                   <Button
                     variant="outline"
                     onClick={() => setIsEditing(false)}
+                    disabled={isSaving}
                     className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSave}
+                    disabled={isSaving}
                     className="gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                   >
-                    <Save className="h-4 w-4" />
-                    Save Changes
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    {isSaving ? "Saving..." : "Save Changes"}
                   </Button>
                 </>
               ) : (
@@ -106,12 +224,22 @@ const ProfilePage = () => {
           </div>
         </div>
 
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Vercel Ticket Card */}
           <div className="lg:col-span-1">
-            <Suspense fallback={<ComponentLoader />}>
-              <VercelTicketCard user={userData} />
-            </Suspense>
+            {userData && (
+              <Suspense fallback={<ComponentLoader />}>
+                <VercelTicketCard user={userData} />
+              </Suspense>
+            )}
 
             {/* Card Actions */}
             <div className="grid grid-cols-2 gap-3 mt-8">
@@ -130,6 +258,33 @@ const ProfilePage = () => {
                 Share
               </Button>
             </div>
+
+            {/* Account Stats */}
+            {profile && (
+              <Card className="mt-6 border-0 shadow-sm bg-white dark:bg-slate-900/70 dark:border-slate-800/60 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-white">Account Stats</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-300">Balance Clicks</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{profile.balance_click_count}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-300">Account Status</span>
+                    <span className={`font-medium ${profile.is_active ? "text-green-600" : "text-red-600"}`}>
+                      {profile.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-300">Role</span>
+                    <span className="font-medium text-slate-900 dark:text-white capitalize">
+                      {profile.role.role_name}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Profile Form */}
@@ -191,13 +346,13 @@ const ProfilePage = () => {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <Label htmlFor="mobile_number" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                       Phone Number
                     </Label>
                     <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
+                      id="mobile_number"
+                      name="mobile_number"
+                      value={formData.mobile_number}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
@@ -246,6 +401,31 @@ const ProfilePage = () => {
                     className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 resize-none dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
                 </div>
+
+                {/* API Key Display */}
+                {profile && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-slate-700 dark:text-slate-200">API Key</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={profile.api_key}
+                        disabled
+                        className="bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-white font-mono text-sm"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          navigator.clipboard.writeText(profile.api_key)
+                          toast.success("API key copied to clipboard!")
+                        }}
+                        className="dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -268,7 +448,9 @@ const ProfilePage = () => {
                     </div>
                     <div>
                       <p className="font-medium text-slate-900 dark:text-white">Password</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">Last changed 3 months ago</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-300">
+                        Last updated {new Date(profile?.updated_at || "").toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                   <Button
