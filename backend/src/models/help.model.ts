@@ -116,7 +116,7 @@ export const getAllHelpRequests = async (page = 1, limit = 10): Promise<{ helpRe
 
 export const updateHelpRequest = async (
   id: number,
-  updateData: { response?: string; status?: string },
+  updateData: { response?: string; status?: "pending" | "in_progress" | "resolved" | "closed" },
 ): Promise<void> => {
   try {
     await Help.update(updateData, { where: { id } })

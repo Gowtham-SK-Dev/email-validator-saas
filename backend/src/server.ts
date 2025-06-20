@@ -6,6 +6,9 @@ import dotenv from "dotenv"
 import rateLimit from "express-rate-limit"
 import os from "os"
 
+// Import models and initialize them
+import { initializeModels } from "./models"
+
 // Import routes
 import authRoutes from "./routes/auth.routes"
 import userRoutes from "./routes/user.routes"
@@ -20,6 +23,12 @@ dotenv.config()
 const app = express()
 const PORT = Number(process.env["PORT"]) || 5000
 const HOST = "0.0.0.0" // Listen on all interfaces for public IP access
+
+// Initialize database models
+initializeModels().catch((error) => {
+  console.error("Failed to initialize models:", error)
+  process.exit(1)
+})
 
 // Security middleware
 app.use(helmet())

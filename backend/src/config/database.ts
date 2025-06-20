@@ -23,7 +23,8 @@ const sequelize = new Sequelize({
     acquire: 30000,
     idle: 10000,
   },
-  logging: process.env.NODE_ENV === "development" ? console.log : false,
+  // logging: process.env.NODE_ENV === "development" ? console.log : false,
+  logging: false, // Disable logging in production
 })
 
 // Test database connection

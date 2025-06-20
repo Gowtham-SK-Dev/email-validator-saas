@@ -1,4 +1,4 @@
-import { DataTypes, Model, type Optional, Op } from "sequelize"
+import { DataTypes, Model, type Optional, Op, fn, col, literal } from "sequelize"
 import sequelize from "../config/database"
 import { Role } from "./role.model"
 
@@ -127,9 +127,20 @@ User.init(
 // Service functions
 export const getUserById = async (id: number): Promise<User | null> => {
   try {
-    return await User.findByPk(id, {
-      include: [{ model: Role, as: "role" }],
+    console.log("Getting user by ID:", id)
+
+    const user = await User.findByPk(id, {
+      include: [
+        {
+          model: Role,
+          as: "role",
+          required: false, // Make the join optional in case role doesn't exist
+        },
+      ],
     })
+
+    console.log("User found:", user ? "Yes" : "No")
+    return user
   } catch (error) {
     console.error("Error getting user by ID:", error)
     throw error
@@ -140,7 +151,13 @@ export const getUserByUsername = async (username: string): Promise<User | null> 
   try {
     return await User.findOne({
       where: { username },
-      include: [{ model: Role, as: "role" }],
+      include: [
+        {
+          model: Role,
+          as: "role",
+          required: false,
+        },
+      ],
     })
   } catch (error) {
     console.error("Error getting user by username:", error)
@@ -152,7 +169,13 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
   try {
     return await User.findOne({
       where: { email },
-      include: [{ model: Role, as: "role" }],
+      include: [
+        {
+          model: Role,
+          as: "role",
+          required: false,
+        },
+      ],
     })
   } catch (error) {
     console.error("Error getting user by email:", error)
@@ -164,7 +187,13 @@ export const getUserByApiKey = async (apiKey: string): Promise<User | null> => {
   try {
     return await User.findOne({
       where: { api_key: apiKey },
-      include: [{ model: Role, as: "role" }],
+      include: [
+        {
+          model: Role,
+          as: "role",
+          required: false,
+        },
+      ],
     })
   } catch (error) {
     console.error("Error getting user by API key:", error)
@@ -231,7 +260,7 @@ export const getAllUsers = async (page = 1, limit = 10, search = ""): Promise<{ 
 
     const { count, rows } = await User.findAndCountAll({
       where: whereClause,
-      include: [{ model: Role, as: "role" }],
+      include: [{ model: Role, as: "role", required: false }],
       order: [["created_at", "DESC"]],
       limit,
       offset,
@@ -246,16 +275,44 @@ export const getAllUsers = async (page = 1, limit = 10, search = ""): Promise<{ 
 
 export const getUserApiUsage = async (id: number): Promise<any> => {
   try {
-    // This would require additional queries for click history and subscriptions
-    // Implementation depends on the ClickHistory and Subscription models
     const user = await User.findByPk(id)
     if (!user) {
       throw new Error("User not found")
     }
 
+    // Import ClickHistory model dynamically to avoid circular dependency
+    const { ClickHistory } = await import("./click-history.model")
+    const { Subscription } = await import("./subscription.model")
+    const { SubscriptionType } = await import("./subscription-type.model")
+
+    // Get monthly usage from click history using Sequelize aggregation
+    const monthlyUsage = await ClickHistory.findAll({
+      where: { user_id: id },
+      attributes: [
+        [fn("DATE_FORMAT", col("created_at"), "%b"), "name"],
+        [fn("SUM", col("used_click_count")), "total"],
+        [fn("SUM", col("used_click_count")), "verified"],
+        [literal("0"), "invalid"],
+      ],
+      group: [fn("DATE_FORMAT", col("created_at"), "%Y-%m")],
+      order: [[col("created_at"), "ASC"]],
+      limit: 6,
+    })
+
+    // Get active subscription
+    const subscription = await Subscription.findOne({
+      where: {
+        user_id: id,
+        status: "active",
+      },
+      include: [{ model: SubscriptionType, as: "subscriptionType" }],
+      order: [["end_date", "DESC"]],
+    })
+
     return {
+      monthlyUsage,
+      subscription: subscription || null,
       balance_click_count: user.balance_click_count,
-      // Additional usage stats would be implemented here
     }
   } catch (error) {
     console.error("Error getting user API usage:", error)
@@ -265,13 +322,65 @@ export const getUserApiUsage = async (id: number): Promise<any> => {
 
 export const getUserStats = async (): Promise<any> => {
   try {
+    // Import models dynamically to avoid circular dependency
+    const { Payment } = await import("./payment.model")
+    const { ClickHistory } = await import("./click-history.model")
+    const { SubscriptionType } = await import("./subscription-type.model")
+
+    // Get total users
     const totalUsers = await User.count()
+
+    // Get active users
     const activeUsers = await User.count({ where: { is_active: true } })
+
+    // Get total revenue from completed payments
+    const totalRevenueResult = await Payment.findOne({
+      attributes: [[fn("SUM", col("amount")), "total"]],
+      where: { status: "completed" },
+    })
+
+    // Get total clicks used
+    const totalClicksResult = await ClickHistory.findOne({
+      attributes: [[fn("SUM", col("used_click_count")), "total"]],
+    })
+
+    // Get monthly revenue
+    const monthlyRevenue = await Payment.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("created_at"), "%b"), "month"],
+        [fn("SUM", col("amount")), "total"],
+      ],
+      where: { status: "completed" },
+      group: [fn("DATE_FORMAT", col("created_at"), "%Y-%m")],
+      order: [[col("created_at"), "ASC"]],
+      limit: 6,
+    })
+
+    // Get recent users with their subscription info
+    const recentUsers = await User.findAll({
+      attributes: ["id", "username", "email", "created_at"],
+      include: [
+        {
+          model: Role,
+          as: "role",
+          attributes: ["role_name"],
+          required: false,
+        },
+      ],
+      order: [["created_at", "DESC"]],
+      limit: 5,
+    })
 
     return {
       totalUsers,
       activeUsers,
-      // Additional stats would be implemented here
+      totalRevenue: (totalRevenueResult as any)?.dataValues?.total || 0,
+      totalClicks: (totalClicksResult as any)?.dataValues?.total || 0,
+      monthlyRevenue: monthlyRevenue.map((item: any) => item.dataValues),
+      recentUsers: recentUsers.map((user: any) => ({
+        ...user.dataValues,
+        plan_name: null, // This would need a more complex query to get active subscription
+      })),
     }
   } catch (error) {
     console.error("Error getting user stats:", error)

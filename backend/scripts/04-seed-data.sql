@@ -13,13 +13,13 @@ INSERT IGNORE INTO payment_types (payment_type_name) VALUES
 ('paypal');
 
 -- Insert subscription types
-INSERT IGNORE INTO subscription_types (plan_name, price, hit_limit, validity, description) VALUES
-('Free Trial', 0.00, 100, 30, 'Free trial plan with 100 email verifications for 30 days'),
-('Basic Plan', 299.00, 1000, 30, 'Basic plan with 1,000 email verifications per month'),
-('Pro Plan', 599.00, 5000, 30, 'Professional plan with 5,000 email verifications per month'),
-('Business Plan', 999.00, 15000, 30, 'Business plan with 15,000 email verifications per month'),
-('Enterprise Plan', 1999.00, 50000, 30, 'Enterprise plan with 50,000 email verifications per month'),
-('Unlimited Plan', 4999.00, 999999, 30, 'Unlimited plan with unlimited email verifications per month');
+INSERT IGNORE INTO subscription_types (plan_name, price, hit_limit, validity) VALUES
+('Free Trial', 0.00, 100, 30),
+('Basic Plan', 299.00, 1000, 30),
+('Pro Plan', 599.00, 5000, 30),
+('Business Plan', 999.00, 15000, 30),
+('Enterprise Plan', 1999.00, 50000, 30),
+('Unlimited Plan', 4999.00, 999999, 30);
 
 -- Insert sample admin user (password: admin123)
 -- Note: In production, this should be created through the registration process

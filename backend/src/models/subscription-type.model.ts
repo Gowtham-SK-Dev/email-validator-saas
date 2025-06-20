@@ -7,17 +7,13 @@ interface SubscriptionTypeAttributes {
   price: number
   hit_limit: number
   validity?: number | null
-  description?: string
   is_active: boolean
   created_at: Date
   updated_at: Date
 }
 
 interface SubscriptionTypeCreationAttributes
-  extends Optional<
-    SubscriptionTypeAttributes,
-    "id" | "created_at" | "updated_at" | "validity" | "description" | "is_active"
-  > {}
+  extends Optional<SubscriptionTypeAttributes, "id" | "created_at" | "updated_at" | "validity" | "is_active"> {}
 
 export class SubscriptionType
   extends Model<SubscriptionTypeAttributes, SubscriptionTypeCreationAttributes>
@@ -28,7 +24,6 @@ export class SubscriptionType
   public price!: number
   public hit_limit!: number
   public validity?: number | null
-  public description?: string
   public is_active!: boolean
   public created_at!: Date
   public updated_at!: Date
@@ -57,10 +52,6 @@ SubscriptionType.init(
       type: DataTypes.INTEGER,
       allowNull: true,
       comment: "Validity in days, NULL for unlimited",
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
     },
     is_active: {
       type: DataTypes.BOOLEAN,

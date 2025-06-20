@@ -115,7 +115,7 @@ export const verifySubscriptionPayment = async (req: Request, res: Response): Pr
     }
 
     // Create subscription record
-    const subscriptionId = await createSubscription({
+    const subscription = await createSubscription({
       user_id: userId,
       payment_type_id,
       subscription_type_id,
@@ -131,7 +131,7 @@ export const verifySubscriptionPayment = async (req: Request, res: Response): Pr
       user_id: userId,
       amount: subscriptionType.price,
       payment_type_id,
-      subscription_id: subscriptionId,
+      subscription_id: subscription.id,
       transaction_id: razorpay_payment_id,
       status: "completed",
     })
@@ -156,10 +156,10 @@ export const verifySubscriptionPayment = async (req: Request, res: Response): Pr
 
     res.status(200).json({
       message: "Payment verified and subscription activated",
-      subscription_id: subscriptionId,
+      subscription_id: subscription.id,
     })
   } catch (error) {
-    console.error("Verify subscription payment error:", error) 
+    console.error("Verify subscription payment error:", error)
     res.status(500).json({ message: "Internal server error" })
   }
 }

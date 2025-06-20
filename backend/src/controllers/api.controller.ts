@@ -4,7 +4,6 @@ import { verifyEmail } from "../services/email-verification.service"
 import { updateUserClickCount } from "../models/user.model"
 import { logClickHistory } from "../models/click-history.model"
 
-
 export const authenticateApiKey = async (req: Request, res: Response, next: Function): Promise<void> => {
   try {
     const apiKey = req.headers["x-api-key"] as string
@@ -33,7 +32,6 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Func
       return
     }
 
-    
     req.user = {
       id: user.id,
       username: user.username,
@@ -47,7 +45,6 @@ export const authenticateApiKey = async (req: Request, res: Response, next: Func
     res.status(500).json({ success: false, message: "Internal server error" })
   }
 }
-
 
 export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -71,13 +68,10 @@ export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<
 
     const userId = req.user.id
 
-    
     const result = await verifyEmail(email)
 
-    
     const newClickCount = await updateUserClickCount(userId, -1)
 
-    
     await logClickHistory(userId, newClickCount + 1, newClickCount, 1)
 
     res.status(200).json({
@@ -102,7 +96,6 @@ export const verifyEmailEndpoint = async (req: Request, res: Response): Promise<
     })
   }
 }
-
 
 export const getApiUsage = async (req: Request, res: Response): Promise<void> => {
   try {

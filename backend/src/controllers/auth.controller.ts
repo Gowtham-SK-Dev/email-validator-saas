@@ -42,7 +42,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    
     const api_key = `sk-${uuidv4()}`
     const api_secret = uuidv4()
 
@@ -63,6 +62,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({ success: true, message: "User registered successfully" })
   } catch (error) {
+    console.error("Registration error:", error)
     res.status(500).json({ success: false, message: "Registration failed", error })
   }
 }
@@ -89,36 +89,55 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ success: true, message: "OTP verified successfully" })
   } catch (error) {
+    console.error("OTP verification error:", error)
     res.status(400).json({ success: false, message: "OTP verification failed", error })
   }
 }
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log("Login attempt for:", req.body.username)
     const { username, password } = req.body
 
-    
+    // Try to find user by username first
     let user = await getUserByUsername(username)
+
+    // If not found by username, try email
     if (!user) {
+      console.log("User not found by username, trying email")
       user = await getUserByEmail(username)
       if (!user) {
-        res.status(401).json({ success: false, message: "Invalid credentials" })
+        console.log("User not found by email either")
+        res.status(401).json({ success: false, message: "Invalid credentials", details: "User not found" })
         return
       }
     }
 
+    console.log("User found:", user.username, "Active:", user.is_active)
 
+    // Check if user is active
     if (!user.is_active) {
-      res.status(401).json({ success: false, message: "Account is not activated. Please verify your email." })
+      console.log("Account is not activated")
+      res.status(401).json({
+        success: false,
+        message: "Account is not activated. Please verify your email.",
+        details: "Account inactive",
+      })
       return
     }
 
+    // Verify password
+    console.log("Comparing password...")
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      res.status(401).json({ success: false, message: "Invalid credentials" })
+      console.log("Password invalid")
+      res.status(401).json({ success: false, message: "Invalid credentials", details: "Password incorrect" })
       return
     }
 
+    console.log("Password valid, generating token")
+
+    // Get role
     const role = await getRoleByName("admin")
     const roleName = user.role_id === role?.id ? "admin" : "user"
 
@@ -136,11 +155,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       expiresIn: refreshTokenExpiresIn,
     })
 
-    
     const expiresIn = 7 * 24 * 60 * 60 // 7 days in seconds
 
     // Remove sensitive data from user object
-    const { password: _, api_secret, otp, ...userData } = user
+    const userObj = user.toJSON ? user.toJSON() : user
+    const { password: _, api_secret, otp, ...userData } = userObj
+
+    console.log("Login successful for:", userData.username)
 
     res.status(200).json({
       success: true,
@@ -150,6 +171,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       expiresIn: expiresIn,
     })
   } catch (error) {
+    console.error("Login error:", error)
     res.status(401).json({ success: false, message: "Login failed", error })
   }
 }
@@ -172,6 +194,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json({ success: true, message: "Password reset email sent" })
   } catch (error) {
+    console.error("Forgot password error:", error)
     res.status(500).json({ success: false, message: "Forgot password failed", error })
   }
 }
@@ -202,10 +225,10 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
     res.status(200).json({ success: true, message: "Password reset successful" })
   } catch (error) {
+    console.error("Reset password error:", error)
     res.status(500).json({ success: false, message: "Reset password failed", error })
   }
 }
-
 
 export const sendOtp = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -225,10 +248,10 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
 
     res.status(200).json({ success: true, message: "OTP sent successfully" })
   } catch (error) {
+    console.error("Send OTP error:", error)
     res.status(500).json({ success: false, message: "Send OTP failed", error })
   }
 }
-
 
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -239,7 +262,6 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    
     const decoded = jwt.verify(refreshToken, process.env["JWT_SECRET"] as string) as any
 
     if (decoded.type !== "refresh") {
@@ -247,7 +269,6 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    
     const user = await getUserById(decoded.id)
     if (!user) {
       res.status(401).json({ success: false, message: "User not found" })
@@ -279,7 +300,8 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     const expiresIn = 7 * 24 * 60 * 60 // 7 days in seconds
 
     // Remove sensitive data from user object
-    const { password: _, api_secret, otp, ...userData } = user
+    const userObj = user.toJSON ? user.toJSON() : user
+    const { password: _, api_secret, otp, ...userData } = userObj
 
     res.status(200).json({
       success: true,
@@ -293,7 +315,6 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
     res.status(401).json({ success: false, message: "Invalid or expired refresh token" })
   }
 }
-
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -323,7 +344,6 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ success: false, message: "Logout failed" })
   }
 }
-
 
 export const logoutAll = async (req: Request, res: Response): Promise<void> => {
   try {

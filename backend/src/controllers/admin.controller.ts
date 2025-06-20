@@ -5,7 +5,6 @@ import { getAllClickHistory, generateClickHistoryReport } from "../models/click-
 import { getAllHelpRequests, updateHelpRequest } from "../models/help.model"
 import { generateCsv } from "../utils/csvGenerator"
 
-
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   console.log("Fetching all users...")
   try {
@@ -32,7 +31,6 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
       return
     }
 
-    
     const { password, api_secret, otp, ...userData } = user
 
     res.status(200).json({ user: userData })
@@ -41,7 +39,6 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ message: "Internal server error" })
   }
 }
-
 
 export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -67,7 +64,6 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
   }
 }
 
-
 export const getPayments = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -89,7 +85,6 @@ export const getPayments = async (req: Request, res: Response): Promise<void> =>
   }
 }
 
-
 export const getClickHistories = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -105,7 +100,6 @@ export const getClickHistories = async (req: Request, res: Response): Promise<vo
   }
 }
 
-
 export const getHelpRequests = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = Number.parseInt(req.query.page as string) || 1
@@ -119,7 +113,6 @@ export const getHelpRequests = async (req: Request, res: Response): Promise<void
     res.status(500).json({ message: "Internal server error" })
   }
 }
-
 
 export const respondToHelpRequest = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -135,7 +128,6 @@ export const respondToHelpRequest = async (req: Request, res: Response): Promise
   }
 }
 
-
 export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const stats = await getUserStats()
@@ -147,17 +139,14 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
   }
 }
 
-
 export const exportClickHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     const startDate = (req.query.startDate as string) || ""
     const endDate = (req.query.endDate as string) || ""
     const userId = Number.parseInt(req.query.userId as string) || 0
 
-    
     const reportData = await generateClickHistoryReport(startDate, endDate, userId)
 
-    
     const csv = generateCsv(reportData, [
       "id",
       "username",
@@ -168,7 +157,6 @@ export const exportClickHistory = async (req: Request, res: Response): Promise<v
       "created_at",
     ])
 
-  
     res.setHeader("Content-Type", "text/csv")
     res.setHeader("Content-Disposition", "attachment; filename=click-history-report.csv")
 

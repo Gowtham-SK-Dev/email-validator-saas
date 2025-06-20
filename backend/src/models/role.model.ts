@@ -4,17 +4,15 @@ import sequelize from "../config/database"
 interface RoleAttributes {
   id: number
   role_name: string
-  description?: string
   created_at: Date
   updated_at: Date
 }
 
-interface RoleCreationAttributes extends Optional<RoleAttributes, "id" | "created_at" | "updated_at" | "description"> {}
+interface RoleCreationAttributes extends Optional<RoleAttributes, "id" | "created_at" | "updated_at"> {}
 
 export class Role extends Model<RoleAttributes, RoleCreationAttributes> implements RoleAttributes {
   public id!: number
   public role_name!: string
-  public description?: string
   public created_at!: Date
   public updated_at!: Date
 }
@@ -30,10 +28,6 @@ Role.init(
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
     },
     created_at: {
       type: DataTypes.DATE,
@@ -83,9 +77,9 @@ export const getAllRoles = async (): Promise<Role[]> => {
   }
 }
 
-export const createRole = async (roleName: string, description?: string): Promise<Role> => {
+export const createRole = async (roleName: string): Promise<Role> => {
   try {
-    return await Role.create({ role_name: roleName, description })
+    return await Role.create({ role_name: roleName })
   } catch (error) {
     console.error("Error creating role:", error)
     throw error
