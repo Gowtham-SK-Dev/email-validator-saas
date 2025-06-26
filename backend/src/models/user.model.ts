@@ -1,6 +1,8 @@
 import { DataTypes, Model, type Optional, Op, fn, col, literal } from "sequelize"
 import sequelize from "../config/database"
 import { Role } from "./role.model"
+import { Subscription } from "./subscription.model"
+import { SubscriptionType } from "./subscription-type.model"
 
 interface UserAttributes {
   id: number
@@ -128,13 +130,32 @@ User.init(
 export const getUserById = async (id: number): Promise<User | null> => {
   try {
     console.log("Getting user by ID:", id)
-
     const user = await User.findByPk(id, {
       include: [
         {
           model: Role,
           as: "role",
           required: false, // Make the join optional in case role doesn't exist
+        },
+        {
+          model: Subscription,
+          as: "subscriptions",
+          required: false,
+          include: [
+            {
+              model: SubscriptionType,
+              as: "subscriptionType",
+              required: false,
+            },
+            
+          ],
+          // Only include the latest or active subscription
+          where: {
+            status: "active"
+          },
+          separate: true,
+          limit: 1,
+          order: [["end_date", "DESC"]]
         },
       ],
     })

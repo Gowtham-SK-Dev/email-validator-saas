@@ -41,6 +41,7 @@ const ProfilePage = () => {
     company: "",
     location: "",
     bio: "",
+    subscription: "",
   })
 
   // Fetch profile data on component mount
@@ -72,6 +73,7 @@ const ProfilePage = () => {
           company: "Tech Solutions Inc.", // Default values
           location: "Bangalore, India",
           bio: `${response.data.role.role_name} with API access. Account created ${new Date(response.data.created_at).toLocaleDateString()}.`,
+          subscription: response.data.subscriptions[0]?.subscriptionType?.plan_name || "Free",
         })
       } else {
         setError(response.error || "Failed to load profile")
@@ -121,7 +123,7 @@ const ProfilePage = () => {
       setIsSaving(false)
     }
   }
-
+console.log("ProfilePage rendered with profileaaa:", formData)
   // User data for the ticket card
   const userData = profile
     ? {
@@ -133,7 +135,7 @@ const ProfilePage = () => {
           .join("")
           .toUpperCase()
           .slice(0, 2),
-        plan: profile.role.role_name === "admin" ? "Admin Plan" : "Pro Plan",
+        plan: formData.subscription || "Free",
         apiKey: profile.api_key,
         joinDate: new Date(profile.created_at).toLocaleDateString("en-US", {
           year: "numeric",
