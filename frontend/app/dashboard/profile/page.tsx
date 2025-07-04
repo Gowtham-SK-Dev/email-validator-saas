@@ -102,7 +102,6 @@ const ProfilePage = () => {
         email: formData.email,
         mobile_number: formData.mobile_number,
         company: formData.company,
-        
       }
 
       const response = await ProfileService.updateProfile(updateData)
@@ -384,7 +383,7 @@ const ProfilePage = () => {
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    disabled={!isEditing}
+                    disabled
                     className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
                 </div>
@@ -398,7 +397,7 @@ const ProfilePage = () => {
                     name="bio"
                     value={formData.bio}
                     onChange={handleInputChange}
-                    disabled={!isEditing}
+                    disabled
                     rows={4}
                     className="bg-slate-50 border-slate-200 focus:bg-white transition-colors duration-200 resize-none dark:bg-slate-800 dark:border-slate-700 dark:focus:bg-slate-900 dark:text-white disabled:opacity-60"
                   />
