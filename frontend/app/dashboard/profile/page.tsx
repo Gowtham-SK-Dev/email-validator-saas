@@ -55,7 +55,7 @@ const ProfilePage = () => {
 
     try {
       const response = await ProfileService.getProfile()
-
+      console.log(response)
       if (response.success && response.data) {
         setProfile(response.data)
 
@@ -70,8 +70,8 @@ const ProfilePage = () => {
           mobile_number: response.data.mobile_number,
           firstName,
           lastName,
-          company: "Tech Solutions Inc.", // Default values
-          location: "Bangalore, India",
+          company: response.data.company?response.data.company: "We're thrilled to hear your company name!", 
+          location: response.data.state?(response.data.country?(response.data.state + " , "+ response.data.country):response.data.state):response.data.country?response.data.country:"We're thrilled to hear your Location",
           bio: `${response.data.role.role_name} with API access. Account created ${new Date(response.data.created_at).toLocaleDateString()}.`,
           subscription: response.data.subscriptions[0]?.subscriptionType?.plan_name || "Free",
         })
@@ -123,7 +123,6 @@ const ProfilePage = () => {
       setIsSaving(false)
     }
   }
-console.log("ProfilePage rendered with profileaaa:", formData)
   // User data for the ticket card
   const userData = profile
     ? {

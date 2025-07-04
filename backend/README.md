@@ -165,6 +165,14 @@ npm run lint
 5. Set up monitoring and logging
 6. Configure backup strategies
 
+## Developer Notes
+
+1. npx.cmd sequelize-cli migration:generate --name add-new-fields-to-users  / for create the migration
+2. npx.cmd sequelize-cli db:migrate --config src/config/database.ts --migrations-path migrations
+ / for run the migration
+3. npx.cmd sequelize-cli db:migrate:undo // rollback cmd
+
+
 ## License
 
 MIT License

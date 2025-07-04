@@ -16,12 +16,16 @@ interface UserAttributes {
   balance_click_count: number
   is_active: boolean
   role_id: number
+  company?: string | null
+  address?: string | null
+  zip_code: number
+  state?: string | null
+  country?: string | null
   created_at: Date
   updated_at: Date
 }
-
 interface UserCreationAttributes
-  extends Optional<UserAttributes, "id" | "created_at" | "updated_at" | "otp" | "balance_click_count" | "is_active"> {}
+  extends Optional<UserAttributes, "id" | "created_at" | "updated_at" | "otp" | "balance_click_count" | "is_active" | "company" | "address" |"state" | "country"> {}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
   public id!: number
@@ -35,6 +39,11 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   public balance_click_count!: number
   public is_active!: boolean
   public role_id!: number
+  public company?: string | null
+  public address?: string | null
+  public zip_code!: number
+  public state?: string | null
+  public country?: string
   public created_at!: Date
   public updated_at!: Date
 
@@ -97,6 +106,28 @@ User.init(
         model: "roles",
         key: "id",
       },
+    },
+    
+    company:{
+      type: DataTypes.STRING(255),
+      allowNull:true,
+    },
+    address:{
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    
+    state:{
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    country:{
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    zip_code:{
+      type: DataTypes.INTEGER,
+      allowNull: false
     },
     created_at: {
       type: DataTypes.DATE,

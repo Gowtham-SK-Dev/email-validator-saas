@@ -17,7 +17,7 @@ import { promisify } from "util"
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, password, email, mobile_number } = req.body
+    const { username, password, email, mobile_number,company,address,zip_code,state,country } = req.body
 
     const existingUsername = await getUserByUsername(username)
     if (existingUsername) {
@@ -56,6 +56,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       balance_click_count: 100,
       is_active: false,
       role_id: userRole.id,
+      company,
+      address,
+      zip_code,
+      state,
+      country
     })
 
     // await sendOtpEmail(email, otp)
