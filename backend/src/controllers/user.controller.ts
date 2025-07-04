@@ -47,23 +47,16 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
 
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("Updating user profile...")
 
     if (!req.user || !req.user.id) {
       res.status(401).json({ success: false, message: "Not authenticated" })
       return
     }
-
     const userId = req.user.id
-    const { username, mobile_number } = req.body
-
-    console.log("Updating user:", userId, "with data:", { username, mobile_number })
-
-    await updateUser(userId, { username, mobile_number })
-
+    const { username, mobile_number, company} = req.body
+    await updateUser(userId, { username, mobile_number, company})
     res.status(200).json({ success: true, message: "Profile updated successfully" })
   } catch (error) {
-    console.error("Update profile error:", error)
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -165,7 +158,6 @@ export const getUserSubscriptions = async (req: Request, res: Response): Promise
   }
 }
 
-// Get user click history
 export const getClickHistory = async (req: Request, res: Response): Promise<void> => {
   try {
     console.log("Getting user click history...")

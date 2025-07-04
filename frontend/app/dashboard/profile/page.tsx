@@ -35,7 +35,6 @@ const ProfilePage = () => {
     username: "",
     email: "",
     mobile_number: "",
-    // Additional fields for display
     firstName: "",
     lastName: "",
     company: "",
@@ -102,6 +101,8 @@ const ProfilePage = () => {
         username: username || formData.username,
         email: formData.email,
         mobile_number: formData.mobile_number,
+        company: formData.company,
+        
       }
 
       const response = await ProfileService.updateProfile(updateData)
