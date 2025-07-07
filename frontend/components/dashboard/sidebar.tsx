@@ -98,9 +98,7 @@ export function Sidebar() {
 
     // Set visual feedback immediately
     setClickedRoute(href)
-
-    // Start loader with specific source
-    startLoading(`sidebar-${label.toLowerCase().replace(/\s+/g, "-")}`)
+    
 
     // Navigate immediately
     router.push(href)
@@ -188,7 +186,10 @@ export function Sidebar() {
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <button
-                  onClick={() => handleNavigation(route.href, route.title)}
+                  onClick={() => {
+                    startLoading(`sidebar-${route.title.toLowerCase().replace(/\s+/g, "-")}`);
+                    handleNavigation(route.href, route.title);
+                  }}                  
                   disabled={isActive || isLoading} // Disable if active or loading
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full relative",
@@ -262,7 +263,10 @@ export function Sidebar() {
                 transition={{ duration: 0.3, delay: (sidebarItems.length + index) * 0.05 }}
               >
                 <button
-                  onClick={() => handleNavigation(route.href, route.title)}
+                  onClick={() => {
+                    startLoading(`sidebar-${route.title.toLowerCase().replace(/\s+/g, "-")}`);
+                    handleNavigation(route.href, route.title);
+                  }}                  
                   disabled={isActive || isLoading}
                   className={cn(
                     "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out w-full relative",
