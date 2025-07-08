@@ -70,9 +70,9 @@ export default function DashboardPage() {
       {/* Background Elements */}
       <div className="absolute inset-0 bg-grid-pattern opacity-30 dark:opacity-20" />
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-15 left-10 w-72 h-72 bg-gradient-to-br from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-float" />
         <div
-          className="absolute top-32 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-float"
+          className="absolute top-10 right-10 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-float"
           style={{ animationDelay: "2s" }}
         />
         <div
