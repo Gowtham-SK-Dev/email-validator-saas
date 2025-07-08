@@ -25,13 +25,11 @@ export function RouteGuard({ children, requireAuth = true, redirectTo = "/login"
       if (authLoading) return
 
       if (requireAuth && !user) {
-        console.log("🔒 Route Guard: Redirecting to login - no user found")
         router.replace(redirectTo)
         return
       }
 
       if (!requireAuth && user) {
-        console.log("🔒 Route Guard: User already authenticated, redirecting to dashboard")
         router.replace("/dashboard")
         return
       }

@@ -27,23 +27,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if user is authenticated on app load
   useEffect(() => {
     const checkAuth = async () => {
-      console.log("🔍 AuthProvider: Checking authentication...")
 
       try {
         const currentUser = AuthService.getCurrentUser()
         const isAuth = AuthService.isAuthenticated()
 
-        console.log("🔍 AuthProvider: currentUser:", currentUser)
-        console.log("🔍 AuthProvider: isAuthenticated:", isAuth)
-
         if (currentUser && isAuth) {
           setUser(currentUser)
-          console.log("✅ AuthProvider: User authenticated")
         } else {
-          console.log("❌ AuthProvider: User not authenticated")
         }
       } catch (error) {
-        console.error("❌ AuthProvider: Auth check failed:", error)
         // Clear invalid data
         localStorage.removeItem("auth-token")
         localStorage.removeItem("user-data")
@@ -59,18 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      console.log("🔐 AuthProvider.login called")
       setIsLoading(true)
 
       const response = await AuthService.login({ username, password })
-      console.log("📡 AuthProvider: Login response:", response)
 
       if (response && response.user) {
-        console.log("✅ AuthProvider: Setting user data")
         setUser(response.user)
 
-        // Force a page reload to trigger middleware with new cookie
-        console.log("🔄 AuthProvider: Forcing page reload to update middleware")
         window.location.href = "/dashboard"
 
         return response
@@ -88,15 +76,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       setIsLoading(true)
-      console.log("🚪 AuthProvider: Logging out...")
 
       // Call logout API
       await AuthService.logout()
 
       // Clear user state
       setUser(null)
-
-      console.log("✅ AuthProvider: Logout complete")
 
       // Force page reload to clear middleware state
       window.location.href = "/login"
@@ -122,11 +107,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser,
   }
 
-  console.log("🔍 AuthProvider: Current state:", {
-    user: user?.username || "null",
-    isLoading,
-    isAuthenticated,
-  })
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

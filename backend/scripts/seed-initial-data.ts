@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid"
 
 const seedInitialData = async () => {
   try {
-    console.log("🌱 Seeding initial data...")
 
     // Seed roles
     const adminRole = await Role.findOrCreate({
@@ -17,7 +16,6 @@ const seedInitialData = async () => {
       defaults: { role_name: "user" },
     })
 
-    console.log("✅ Roles seeded")
 
     // Seed payment types
     await PaymentType.findOrCreate({
@@ -35,7 +33,6 @@ const seedInitialData = async () => {
       defaults: { payment_type_name: "paypal" },
     })
 
-    console.log("✅ Payment types seeded")
 
     // Seed subscription types
     const subscriptionPlans = [
@@ -54,7 +51,6 @@ const seedInitialData = async () => {
       })
     }
 
-    console.log("✅ Subscription types seeded")
 
     // Create admin user if not exists
     const adminExists = await User.findOne({ where: { username: "admin" } })
@@ -70,14 +66,12 @@ const seedInitialData = async () => {
         balance_click_count: 999999,
         is_active: true,
         role_id: adminRole[0].id,
+        zip_code: 0, 
       })
-      console.log("✅ Admin user created")
     }
 
-    console.log("🎉 Initial data seeding completed!")
     process.exit(0)
   } catch (error) {
-    console.error("❌ Seeding failed:", error)
     process.exit(1)
   }
 }

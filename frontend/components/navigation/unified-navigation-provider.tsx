@@ -32,13 +32,11 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
 
   // Initialize and handle initial page load
   useEffect(() => {
-    console.log("🏁 Unified Navigation Provider initializing...")
 
     const initialPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
     previousPathRef.current = initialPath
 
     // Start initial loading
-    console.log(`🚀 Starting initial page load for: ${initialPath}`)
     setIsLoading(true)
     loadingSourceRef.current = "initial-load"
 
@@ -47,7 +45,6 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
 
     // Stop initial loading after a short delay to allow page to render
     const initialLoadTimer = setTimeout(() => {
-      console.log("⏹️ Stopping initial page load")
       setIsLoading(false)
       loadingSourceRef.current = ""
       initialLoadCompleteRef.current = true
@@ -71,7 +68,6 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
     // 3. No manual loading is in progress
     // 4. Initial load is complete
     if (previousPath !== currentPath && previousPath !== "" && !isManualLoadingRef.current) {
-      console.log(`🚀 Auto-detected route change: ${previousPath} → ${currentPath}`)
       startLoading("auto-route-change")
     }
 
@@ -83,14 +79,12 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
     if (!mounted) return
 
     const handleBeforeUnload = () => {
-      console.log("🚀 Page unloading, starting loader")
       setIsLoading(true)
       loadingSourceRef.current = "page-unload"
     }
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible" && initialLoadCompleteRef.current) {
-        console.log("🚀 Page became visible, checking if loading needed")
         // Small delay to check if we need to show loading
         setTimeout(() => {
           if (!isLoading) {
@@ -120,7 +114,6 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
         return
       }
 
-      console.log(`🚀 Starting loader from: ${source}`)
 
       // Clear any existing timeout
       if (loadingTimeoutRef.current) {
@@ -139,7 +132,6 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
       // Auto-stop loading after a reasonable time
       const timeoutDuration = source === "initial-load" ? 1000 : 2000
       loadingTimeoutRef.current = setTimeout(() => {
-        console.log(`⏹️ Auto-stopping loader after timeout (source: ${source})`)
         stopLoading("timeout")
       }, timeoutDuration)
     },
@@ -149,8 +141,6 @@ export function UnifiedNavigationProvider({ children }: { children: React.ReactN
   const stopLoading = useCallback(
     (source = "manual") => {
       if (!mounted && source !== "timeout") return
-
-      console.log(`⏹️ Stopping loader from: ${source}`)
 
       // Clear timeout
       if (loadingTimeoutRef.current) {

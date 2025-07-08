@@ -12,7 +12,6 @@ function getUserFromToken(token: string) {
 
 // Mock database operations
 async function updateUserSubscription(userId: string, planId: string) {
-  console.log("💾 Updating user subscription:", { userId, planId })
   return {
     success: true,
     subscription: {
@@ -25,12 +24,10 @@ async function updateUserSubscription(userId: string, planId: string) {
 }
 
 async function updateOrderStatus(orderId: string, status: string, paymentId?: string, gateway?: string) {
-  console.log("💾 Updating order status:", { orderId, status, paymentId, gateway })
   return { success: true }
 }
 
 async function getOrderFromDB(orderId: string) {
-  console.log("💾 Getting order from database:", orderId)
   // Mock order data - in production, fetch from database
   return {
     id: orderId,
@@ -49,12 +46,6 @@ function verifyRazorpaySignature(orderId: string, paymentId: string, signature: 
       .update(`${orderId}|${paymentId}`)
       .digest("hex")
 
-    console.log("🔐 Razorpay signature verification:", {
-      expected: expectedSignature,
-      received: signature,
-      match: expectedSignature === signature,
-    })
-
     return process.env.NODE_ENV === "development" || expectedSignature === signature
   } catch (error) {
     console.error("❌ Razorpay signature verification error:", error)
@@ -70,7 +61,6 @@ async function verifyStripePayment(sessionId: string): Promise<boolean> {
     // const session = await stripe.checkout.sessions.retrieve(sessionId);
     // return session.payment_status === 'paid';
 
-    console.log("🔐 Stripe payment verification (mock):", sessionId)
     return sessionId.startsWith("cs_") || sessionId.startsWith("stripe_")
   } catch (error) {
     console.error("❌ Stripe verification error:", error)
@@ -111,8 +101,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { orderId, paymentId, signature, planId, gateway, additionalData } = body
-
-    console.log(`🔐 Verifying ${gateway} payment:`, { orderId, paymentId, gateway })
 
     // Get user from auth token
     const authHeader = request.headers.get("authorization")
@@ -171,7 +159,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment verification failed" }, { status: 400 })
     }
 
-    console.log(`✅ ${gateway} payment verified successfully`)
 
     // Update order status to completed
     await updateOrderStatus(orderId, "completed", paymentId, gateway)
@@ -182,19 +169,6 @@ export async function POST(request: NextRequest) {
     if (!subscriptionResult.success) {
       return NextResponse.json({ error: "Failed to update subscription" }, { status: 500 })
     }
-
-    // Send confirmation email (mock)
-    console.log("📧 Sending confirmation email to:", user.email)
-
-    // Log successful payment for analytics
-    console.log("📊 Payment analytics:", {
-      gateway,
-      amount: order.amount,
-      currency: order.currency,
-      userId: user.id,
-      planId,
-      timestamp: new Date().toISOString(),
-    })
 
     return NextResponse.json({
       success: true,

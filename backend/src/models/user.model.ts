@@ -160,7 +160,6 @@ User.init(
 // Service functions
 export const getUserById = async (id: number): Promise<User | null> => {
   try {
-    console.log("Getting user by ID:", id)
     const user = await User.findByPk(id, {
       include: [
         {
@@ -191,7 +190,6 @@ export const getUserById = async (id: number): Promise<User | null> => {
       ],
     })
 
-    console.log("User found:", user ? "Yes" : "No")
     return user
   } catch (error) {
     console.error("Error getting user by ID:", error)

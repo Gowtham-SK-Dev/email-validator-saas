@@ -6,7 +6,6 @@ import { getAllHelpRequests, updateHelpRequest } from "../models/help.model"
 import { generateCsv } from "../utils/csvGenerator"
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
-  console.log("Fetching all users...")
   try {
     const page = Number.parseInt(req.query.page as string) || 1
     const limit = Number.parseInt(req.query.limit as string) || 10

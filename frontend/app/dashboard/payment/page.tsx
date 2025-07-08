@@ -134,7 +134,6 @@ export default function PaymentPage() {
   // Load PayPal when selected
   useEffect(() => {
     if (selectedMethod === "paypal" && !paypalLoaded) {
-      console.log("🔄 Loading PayPal for selected method...")
       PayPalService.loadScript().then((loaded) => {
         setPaypalLoaded(loaded)
         if (!loaded) {
@@ -208,7 +207,6 @@ export default function PaymentPage() {
 
   const createPaymentOrder = async () => {
     setVerificationStep("Creating payment order...")
-    console.log("🚀 Creating payment order...")
 
     const response = await fetch("/api/payment/create-order", {
       method: "POST",
@@ -230,14 +228,12 @@ export default function PaymentPage() {
     }
 
     const data = await response.json()
-    console.log("✅ Order created:", data)
     return data.data
   }
 
   const verifyPayment = async (paymentData: any) => {
     setPaymentStatus("verifying")
     setVerificationStep("Verifying payment with bank...")
-    console.log("🔐 Verifying payment:", paymentData)
 
     const response = await fetch("/api/payment/verify", {
       method: "POST",
@@ -266,12 +262,10 @@ export default function PaymentPage() {
     }
 
     const result = await response.json()
-    console.log("✅ Payment verified:", result)
     return result
   }
 
   const handlePayment = async () => {
-    console.log(`🚀 Starting ${selectedMethod} payment process...`)
 
     if (!validateForm()) return
 
@@ -289,7 +283,6 @@ export default function PaymentPage() {
       }
 
       const onSuccess = async (response: any) => {
-        console.log("✅ Payment success callback:", response)
         try {
           setVerificationStep("Payment successful! Verifying with bank...")
           const verificationResult = await verifyPayment({ ...response, orderId: order.orderId })

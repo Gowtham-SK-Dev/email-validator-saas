@@ -10,10 +10,6 @@ export async function POST(request: NextRequest) {
       request.headers.get("stripe-signature") ||
       request.headers.get("paypal-transmission-sig")
 
-    console.log("🔔 Webhook received:", {
-      signature: signature ? "present" : "missing",
-      bodyLength: body.length,
-    })
 
     // Determine webhook source based on headers or body content
     let webhookSource = "unknown"
@@ -26,7 +22,6 @@ export async function POST(request: NextRequest) {
       webhookSource = "paypal"
     }
 
-    console.log("🔔 Webhook source:", webhookSource)
 
     switch (webhookSource) {
       case "razorpay":
@@ -36,7 +31,6 @@ export async function POST(request: NextRequest) {
       case "paypal":
         return await handlePayPalWebhook(body, signature!)
       default:
-        console.log("⚠️ Unknown webhook source")
         return NextResponse.json({ error: "Unknown webhook source" }, { status: 400 })
     }
   } catch (error) {
@@ -52,30 +46,25 @@ async function handleRazorpayWebhook(body: string, signature: string) {
     const expectedSignature = crypto.createHmac("sha256", webhookSecret).update(body).digest("hex")
 
     if (signature !== expectedSignature && process.env.NODE_ENV !== "development") {
-      console.error("❌ Razorpay webhook signature verification failed")
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
     }
 
     const event = JSON.parse(body)
-    console.log("🔔 Razorpay webhook event:", event.event)
 
     switch (event.event) {
       case "payment.captured":
         const payment = event.payload.payment.entity
-        console.log("✅ Razorpay payment captured:", payment.id)
         // Update order status, send confirmation email, etc.
         await processSuccessfulPayment("razorpay", payment.order_id, payment.id)
         break
 
       case "payment.failed":
         const failedPayment = event.payload.payment.entity
-        console.log("❌ Razorpay payment failed:", failedPayment.id)
         await processFailedPayment("razorpay", failedPayment.order_id, failedPayment.id)
         break
 
       case "order.paid":
         const order = event.payload.order.entity
-        console.log("✅ Razorpay order paid:", order.id)
         break
 
       default:
@@ -96,23 +85,19 @@ async function handleStripeWebhook(body: string, signature: string) {
     // const event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
 
     const event = JSON.parse(body)
-    console.log("🔔 Stripe webhook event:", event.type)
 
     switch (event.type) {
       case "checkout.session.completed":
         const session = event.data.object
-        console.log("✅ Stripe checkout session completed:", session.id)
         await processSuccessfulPayment("stripe", session.metadata?.orderId, session.id)
         break
 
       case "payment_intent.succeeded":
         const paymentIntent = event.data.object
-        console.log("✅ Stripe payment intent succeeded:", paymentIntent.id)
         break
 
       case "payment_intent.payment_failed":
         const failedIntent = event.data.object
-        console.log("❌ Stripe payment failed:", failedIntent.id)
         await processFailedPayment("stripe", failedIntent.metadata?.orderId, failedIntent.id)
         break
 

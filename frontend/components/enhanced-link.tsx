@@ -39,8 +39,6 @@ export function EnhancedLink({
       onClick?.()
       return
     }
-
-    console.log(`🔗 Enhanced link clicked: ${href}`)
     startLoading("link-navigation")
     onClick?.()
   }

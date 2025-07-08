@@ -38,7 +38,6 @@ export function SimpleNavigationProvider({ children }: { children: React.ReactNo
 
     // Only trigger loading if the path actually changed
     if (previousPath.current !== currentPath && previousPath.current !== "") {
-      console.log("🚀 Navigation detected, starting loader...")
       setIsLoading(true)
 
       // Auto-stop loading after a reasonable time
@@ -47,7 +46,6 @@ export function SimpleNavigationProvider({ children }: { children: React.ReactNo
       }
 
       loadingTimeout.current = setTimeout(() => {
-        console.log("⏹️ Auto-stopping loader...")
         setIsLoading(false)
       }, 800)
     }
@@ -67,7 +65,6 @@ export function SimpleNavigationProvider({ children }: { children: React.ReactNo
   const startLoading = () => {
     if (!mounted) return
 
-    console.log("🚀 Manually starting page loading...")
     setIsLoading(true)
 
     // Clear any existing timeout
@@ -77,7 +74,6 @@ export function SimpleNavigationProvider({ children }: { children: React.ReactNo
 
     // Auto-stop after timeout as fallback
     loadingTimeout.current = setTimeout(() => {
-      console.log("⏹️ Auto-stopping manual loader...")
       setIsLoading(false)
     }, 3000)
   }

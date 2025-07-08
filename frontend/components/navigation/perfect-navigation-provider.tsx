@@ -41,22 +41,18 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
     setMounted(true)
     const initialPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "")
     previousPathRef.current = initialPath
-    console.log(`🏁 Navigation provider initialized with path: ${initialPath}`)
 
     // Listen for browser navigation events
     const handlePopState = () => {
-      console.log("🔄 Browser back/forward navigation detected")
       startLoading("browser-navigation")
     }
 
     const handleBeforeUnload = () => {
-      console.log("🔄 Page unload detected")
       startLoading("page-unload")
     }
 
     // Listen for programmatic navigation
     const handleRouteChangeStart = () => {
-      console.log("🚀 Route change started")
       startLoading("route-change")
     }
 
@@ -82,11 +78,9 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
 
     // If path changed and we have a previous path (not initial load)
     if (previousPath !== currentPath && previousPath !== "") {
-      console.log(`🚀 Route changed: ${previousPath} → ${currentPath}`)
 
       // If we're not already loading from a manual trigger, start loading
       if (!isNavigatingRef.current) {
-        console.log("🔄 Auto-starting loader for route change")
         startLoading("route-change")
       }
 
@@ -101,7 +95,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
 
   // Check if page is fully loaded - IMPROVED
   const checkPageFullyLoaded = useCallback(() => {
-    console.log("🔍 Checking if page is fully loaded...")
 
     let checkCount = 0
     const maxChecks = 30 // Maximum 3 seconds of checking (30 * 100ms)
@@ -122,16 +115,7 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
         document.querySelector("h1, h2") !== null ||
         document.querySelector("[data-page-loaded]") !== null
 
-      console.log(`📊 Page load check #${checkCount}:`, {
-        documentReady,
-        hasContent,
-        noLoadingSpinners,
-        hasMainContent,
-        readyState: document.readyState,
-      })
-
       if (documentReady && hasContent && hasMainContent) {
-        console.log("✅ Page is fully loaded!")
         isNavigatingRef.current = false
         stopLoading("page-fully-loaded")
         return true
@@ -139,7 +123,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
 
       // Stop checking after max attempts
       if (checkCount >= maxChecks) {
-        console.log("⏰ Max check attempts reached, stopping loader")
         isNavigatingRef.current = false
         stopLoading("max-checks-reached")
         return true
@@ -166,7 +149,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
       setTimeout(() => {
         clearInterval(checkInterval)
         if (isLoading) {
-          console.log("⏰ Force stopping loader after max wait time")
           stopLoading("max-wait-time")
         }
       }, maxWaitTimeRef.current)
@@ -208,7 +190,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
     (source = "manual") => {
       if (!mounted) return
 
-      console.log(`🚀 STARTING LOADER from: ${source}`)
       loadingSourceRef.current = source
       startTimeRef.current = Date.now()
       isNavigatingRef.current = true
@@ -223,7 +204,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
 
       // Fallback timeout - force stop after max wait time
       loadingTimeoutRef.current = setTimeout(() => {
-        console.log("⏰ FALLBACK TIMEOUT - Force stopping loader")
         isNavigatingRef.current = false
         stopLoading("fallback-timeout")
       }, maxWaitTimeRef.current)
@@ -236,7 +216,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
       if (!mounted) return
 
       const duration = Date.now() - startTimeRef.current
-      console.log(`⏹️ STOPPING LOADER from: ${source} (duration: ${duration}ms)`)
 
       // Clear all timeouts
       if (loadingTimeoutRef.current) {
@@ -274,7 +253,6 @@ export function PerfectNavigationProvider({ children }: { children: React.ReactN
 
     const handleReadyStateChange = () => {
       if (isLoading && document.readyState === "complete") {
-        console.log("📄 Document ready state changed to complete")
         setTimeout(() => {
           if (isLoading) {
             checkPageFullyLoaded()

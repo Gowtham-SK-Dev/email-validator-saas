@@ -60,10 +60,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("🚀 Login form submitted")
 
     if (!validateForm()) {
-      console.log("❌ Form validation failed")
       toast({
         title: "Validation Error",
         description: "Please check your input and try again.",
@@ -75,11 +73,9 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      console.log("🔐 Attempting login with:", { username: formData.username })
 
       // Call the real login API
       const response = await login(formData.username, formData.password)
-      console.log("✅ Login successful:", response)
 
       // Show success message
       toast({
@@ -89,11 +85,9 @@ export default function LoginPage() {
 
       // Small delay for better UX, then redirect
       setTimeout(() => {
-        console.log("🔄 Redirecting to dashboard...")
         router.push("/dashboard")
       }, 500)
     } catch (error: any) {
-      console.error("❌ Login error:", error)
 
       // Handle different types of errors
       let errorMessage = "Login failed. Please try again."

@@ -12,7 +12,6 @@ function getUserFromToken(token: string) {
 
 // Mock database operations - replace with your actual database
 async function createOrderInDB(orderData: any) {
-  console.log("💾 Creating order in database:", orderData)
   // In production, save to your database
   return { success: true, orderId: orderData.orderId }
 }
@@ -21,8 +20,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { planId, amount, currency = "INR", gateway = "razorpay" } = body
-
-    console.log(`🚀 Creating ${gateway} order:`, { planId, amount, currency })
 
     // Get user from auth token
     const authHeader = request.headers.get("authorization")
@@ -157,8 +154,6 @@ export async function POST(request: NextRequest) {
         // No additional keys needed for UPI
         break
     }
-
-    console.log(`✅ ${gateway} order created successfully:`, responseData)
 
     return NextResponse.json({
       success: true,

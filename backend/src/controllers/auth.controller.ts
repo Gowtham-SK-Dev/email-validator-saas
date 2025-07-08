@@ -45,7 +45,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const api_key = `sk-${uuidv4()}`
     const api_secret = uuidv4()
 
-    await createUser({
+    const user = await createUser({
       username,
       password: hashedPassword,
       email,
@@ -62,6 +62,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       state,
       country
     })
+
+    
 
     // await sendOtpEmail(email, otp)
 
@@ -101,7 +103,6 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log("Login attempt for:", req.body.username)
     const { username, password } = req.body
 
     // Try to find user by username first
@@ -109,20 +110,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // If not found by username, try email
     if (!user) {
-      console.log("User not found by username, trying email")
       user = await getUserByEmail(username)
       if (!user) {
-        console.log("User not found by email either")
         res.status(401).json({ success: false, message: "Invalid credentials", details: "User not found" })
         return
       }
     }
 
-    console.log("User found:", user.username, "Active:", user.is_active)
 
     // Check if user is active
     if (!user.is_active) {
-      console.log("Account is not activated")
       res.status(401).json({
         success: false,
         message: "Account is not activated. Please verify your email.",
@@ -132,15 +129,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Verify password
-    console.log("Comparing password...")
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      console.log("Password invalid")
       res.status(401).json({ success: false, message: "Invalid credentials", details: "Password incorrect" })
       return
     }
-
-    console.log("Password valid, generating token")
 
     // Get role
     const role = await getRoleByName("admin")
@@ -152,21 +145,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const jwtExpiresIn = "7d"
     const refreshTokenExpiresIn = "30d"
 
-    // Generate access token
     const token = await signJwt({ id: user.id, role: roleName }, jwtSecret, { expiresIn: jwtExpiresIn })
 
-    // Generate refresh token
     const refreshToken = await signJwt({ id: user.id, role: roleName, type: "refresh" }, jwtSecret, {
       expiresIn: refreshTokenExpiresIn,
     })
 
-    const expiresIn = 7 * 24 * 60 * 60 // 7 days in seconds
+    const expiresIn = 24 * 60 * 60 
 
-    // Remove sensitive data from user object
     const userObj = user.toJSON ? user.toJSON() : user
     const { password: _, api_secret, otp, ...userData } = userObj
 
-    console.log("Login successful for:", userData.username)
 
     res.status(200).json({
       success: true,

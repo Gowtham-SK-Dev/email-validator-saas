@@ -1,9 +1,8 @@
 import type { Request, Response } from "express"
 import bcrypt from "bcrypt"
-import { getUserById, updateUser, getUserApiUsage } from "../models/user.model"
-import { getSubscriptionsByUserId } from "../models/subscription.model"
-import { getClickHistoryByUserId } from "../models/click-history.model"
-
+import { getUserById, updateUser, getUserApiUsage } from "../../models/user.model"
+import { getSubscriptionsByUserId } from "../../models/subscription.model"
+import { getClickHistoryByUserId } from "../../models/click-history.model"
 export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
   try {
 
@@ -59,7 +58,6 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
 
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
-
     if (!req.user || !req.user.id) {
       res.status(401).json({ success: false, message: "Not authenticated" })
       return
@@ -88,7 +86,6 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
 
     res.status(200).json({ success: true, message: "Password changed successfully" })
   } catch (error) {
-    console.error("Change password error:", error)
     res.status(500).json({
       success: false,
       message: "Internal server error",

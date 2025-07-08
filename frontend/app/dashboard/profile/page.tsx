@@ -178,8 +178,8 @@ const ProfilePage = () => {
       {/* Static background circles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-3xl" />
-        <div className="absolute top-[60%] right-[10%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl" />
-        <div className="absolute bottom-[10%] left-[20%] w-[30rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl" />
+        <div className="absolute top-[1%] right-[5%] w-[35rem] h-[35rem] rounded-full bg-purple-400/20 dark:bg-purple-600/10 blur-3xl" />
+        <div className="absolute bottom-[1%] left-[10%] w-[40rem] h-[30rem] rounded-full bg-cyan-400/20 dark:bg-cyan-600/10 blur-3xl" />
       </div>
 
       <div className="relative max-w-6xl mx-auto space-y-8 p-6 lg:p-8">

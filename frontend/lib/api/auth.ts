@@ -17,16 +17,13 @@ export class AuthService {
   // Login user
   static async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      console.log("🔐 AuthService.login called with:", { username: credentials.username })
 
       const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials, {
         requireAuth: false,
       })
 
-      console.log("📡 API Response:", response)
 
       if (response.success && response.data) {
-        console.log("✅ Login successful, storing user data...")
 
         // Store user data in localStorage and cookies
         if (typeof window !== "undefined") {
@@ -154,12 +151,8 @@ export class AuthService {
       const userData = localStorage.getItem("user-data")
       const token = localStorage.getItem("auth-token")
 
-      console.log("🔍 getCurrentUser - userData:", userData)
-      console.log("🔍 getCurrentUser - token:", token ? "exists" : "missing")
-
       return userData ? JSON.parse(userData) : null
     } catch (error) {
-      console.error("Error parsing user data:", error)
       return null
     }
   }
@@ -172,7 +165,6 @@ export class AuthService {
     const userData = localStorage.getItem("user-data")
 
     const isAuth = !!(token && userData)
-    console.log("🔍 isAuthenticated:", isAuth)
 
     return isAuth
   }
